@@ -3,4 +3,4 @@ language: cpp
 os: osx
 
 script:
-    - "./buildme --travis"
+    - "./buildme XCODE8 travis"
