@@ -1,4 +1,4 @@
 language: cpp
 
 script:
-    - "./buildme XCODE8 travis"
+    - "./buildme travis"
