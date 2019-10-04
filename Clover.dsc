@@ -49,6 +49,7 @@
   # Basic
   #
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
+  BaseRngLib|MdePkg/Library/BaseRngLib/BaseRngLib.inf
   SynchronizationLib|MdePkg/Library/BaseSynchronizationLib/BaseSynchronizationLib.inf
   BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
   #BaseMemoryLib|MdePkg/Library/UefiMemoryLib/UefiMemoryLib.inf
@@ -156,6 +157,11 @@
   MemLogLib|Library/MemLogLibDefault/MemLogLibDefault.inf
   VideoBiosPatchLib|Library/VideoBiosPatchLib/VideoBiosPatchLib.inf
   WaveLib|Library/WaveLib/WaveLib.inf
+
+  OcGuardLib|Library/OcGuardLib/OcGuardLib.inf
+  MachoLib|Library/MachoLib/MachoLib.inf
+  DeviceTreeLib|Library/DeviceTreeLib/DeviceTreeLib.inf
+
     
   ShellLib|ShellPkg/Library/UefiShellLib/UefiShellLib.inf
 !ifndef NO_CLOVER_SHELL
@@ -467,6 +473,7 @@
   Protocols/HashServiceFix/HashServiceFix.inf
   Protocols/AppleKeyAggregator/AppleKeyAggregator.inf
   Protocols/AppleKeyFeeder/AppleKeyFeeder.inf
+  Protocols/AptioInputFix/AptioInputFix.inf
   
 
 !ifdef DEBUG_ON_SERIAL_PORT
@@ -490,7 +497,7 @@
 
 !endif
 
-  # Drivers for Aptio loading - should go to Clover's /EFI/drivers64UEFI dir
+  # Drivers for Aptio loading - should go to Clover's /EFI/drivers/UEFI dir
   Protocols/OsxFatBinaryDrv/OsxFatBinaryDrv.inf
 
   # Drivers for Phoenix UEFI loading - should go to Clover's /EFI/drivers64UEFI dir
@@ -576,22 +583,27 @@
 
 [Components.X64]
 
-  OsxAptioFixDrv/OsxAptioFixDrv.inf
-#  OsxAptioFixDrv/OsxAptioFix2Drv.inf
-  OsxAptioFixDrv/OsxAptioFix3Drv.inf
-  OsxLowMemFixDrv/OsxLowMemFixDrv.inf
-  #OsxAptioFixDrv/OsxAptioFixDrv.inf {
+  
+#  MemoryFix/OsxAptioFixDrv/OsxAptioFix2Drv.inf
+  MemoryFix/OsxAptioFixDrv/OsxAptioFix3Drv.inf
+  MemoryFix/OsxLowMemFixDrv/OsxLowMemFixDrv.inf
+  MemoryFix/AptioMemoryFix/AptioMemoryFix.inf
+!ifdef DEBUG_ON_SERIAL_PORT
+  MemoryFix/OsxAptioFixDrv/OsxAptioFixDrv.inf {
     #
     # Enable debug output.
     #
-   # <PcdsFixedAtBuild>
-   #   gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x07
-   #   gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0xFFFFFFFF
-   # <LibraryClasses>
-   #   SerialPortLib|MdeModulePkg/Library/BaseSerialPortLib16550/BaseSerialPortLib16550.inf
-   #   DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
-   #   DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
-  #}
+    <PcdsFixedAtBuild>
+      gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x07
+      gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0xFFFFFFFF
+    <LibraryClasses>
+      SerialPortLib|MdeModulePkg/Library/BaseSerialPortLib16550/BaseSerialPortLib16550.inf
+      DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
+      DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
+  }
+ !else
+	MemoryFix/OsxAptioFixDrv/OsxAptioFixDrv.inf
+ !endif
 
 ###################################################################################################
 #
