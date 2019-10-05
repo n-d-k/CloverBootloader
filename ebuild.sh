@@ -842,7 +842,7 @@ MainPostBuildScript() {
     done
 
     # drivers64UEFI/MemoryFix
-    binArray=( OsxAptioFixDrv OsxLowMemFixDrv OsxAptioFix3Drv )
+    binArray=( AptioMemoryFix OsxAptioFixDrv OsxLowMemFixDrv OsxAptioFix3Drv )
 
     for efi in "${binArray[@]}"
     do
