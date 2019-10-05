@@ -8,7 +8,7 @@ script:
 deploy:
     provider: releases
     skip_cleanup: true
-    github_token: $GITHUB_TOKEN
+    api_key: $GITHUB_TOKEN
     file:
     - CloverPackage/sym/Clover_v2.5k_r*
     - CloverPackage/sym/*.lzma
