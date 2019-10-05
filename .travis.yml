@@ -9,10 +9,9 @@ deploy:
     provider: releases
     skip_cleanup: true
     github_token: $GITHUB_TOKEN
-    branch: master
     file:
     - CloverPackage/sym/Clover_v2.5k_r*
     - CloverPackage/sym/*.lzma
     file_glob: true
-        on:
-        tags: true
+    on:
+        Branch: Master
