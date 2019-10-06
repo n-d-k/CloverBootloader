@@ -4,14 +4,15 @@ os: osx
 osx_image: xcode11
 
 script:
-    - "./buildme XCODE8 travis"
+  - "./buildme XCODE8 travis"
+  
 deploy:
-    provider: releases
-    skip_cleanup: true
-    api_key: $GITHUB_TOKEN
-    file:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file:
     - CloverPackage/sym/Clover_v2.5k_r*
     - CloverPackage/sym/*.lzma
-    file_glob: true
-    on:
-        Branch: Master
+  skip_cleanup: true
+  on:
+    tags: true
