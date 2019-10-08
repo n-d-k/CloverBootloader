@@ -5,16 +5,3 @@ osx_image: xcode11
 
 script:
   - "./buildme XCODE8 travis"
-  
-deploy:
-  provider: releases
-  api_key: $GITHUB_TOKEN
-  name: Clover_v2.5k_$TRAVIS_TAG
-  body: $TRAVIS_COMMIT_MESSAGE
-  file_glob: true
-  file:
-    - CloverPackage/sym/Clover_v2.5k_r*
-    - CloverPackage/sym/*.lzma
-  skip_cleanup: true
-  on:
-    tags: true
