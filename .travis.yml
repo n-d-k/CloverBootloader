@@ -1,7 +1,4 @@
 language: cpp
-
 os: osx
-osx_image: xcode11
-
 script:
-  - "./buildme XCODE8 travis"
+  - "./buildme travis"
