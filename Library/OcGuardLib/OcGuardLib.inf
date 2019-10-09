@@ -36,6 +36,7 @@
   UbsanPrintf.c
   Ubsan.c
   Ubsan.h
+  OcGuardLib.h # Add this to fix header inclusion
 
 [Packages]
   CloverPkg.dec

@@ -34,3 +34,4 @@
   MachoLibInternal.h
   Relocations.c
   Symbols.c
+  MachoLib.h # Add this to fix header inclusion
