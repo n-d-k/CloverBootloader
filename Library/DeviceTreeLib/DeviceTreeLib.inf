@@ -32,7 +32,6 @@
 
 [Sources]
   DeviceTreeLib.c
-  DeviceTreeLib.h #add this to fix header inclusion
 [Packages]
   CloverPkg.dec
   MdePkg/MdePkg.dec
