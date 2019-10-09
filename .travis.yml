@@ -1,7 +1,12 @@
-language: cpp
+language: c
 
 os: osx
 osx_image: xcode11
 
 script:
   - "./buildme XCODE8 travis"
+addons:
+  homebrew:
+    packages:
+      - nasm
+      - gettext
