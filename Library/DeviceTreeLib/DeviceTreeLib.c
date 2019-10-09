@@ -21,7 +21,7 @@
 #include <Library/PrintLib.h>
 #include <Library/OcMiscLib.h>
 #include <Library/OcStringLib.h>
-#include <Include/Library/DeviceTreeLib.h>
+#include <Library/DeviceTreeLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiLib.h>
 
