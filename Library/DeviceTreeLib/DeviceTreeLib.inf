@@ -32,7 +32,7 @@
 
 [Sources]
   DeviceTreeLib.c
-
+  DeviceTreeLib.h
 [Packages]
   CloverPkg.dec
   MdePkg/MdePkg.dec
