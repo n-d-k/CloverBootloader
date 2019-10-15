@@ -29,6 +29,7 @@
   OcGuardLib
 
 [Sources]
+  ../../Include/Library/MachoLib.h
   CxxSymbols.c
   Header.c
   MachoLibInternal.h
