@@ -164,8 +164,8 @@
   Ia32/Monitor.nasm| GCC
   Ia32/CpuIdEx.nasm| GCC
   Ia32/CpuId.nasm| GCC
-#  Ia32/LongJump.nasm
-#  Ia32/SetJump.nasm
+  Ia32/LongJump.nasm
+  Ia32/SetJump.nasm
   Ia32/SwapBytes64.nasm| GCC
   Ia32/DivU64x64Remainder.nasm
   Ia32/DivU64x32Remainder.nasm| GCC
@@ -184,7 +184,7 @@
 
   Ia32/DivS64x64Remainder.c
   Ia32/InternalSwitchStack.c | MSFT
-#  Ia32/InternalSwitchStack.nasm | GCC
+  Ia32/InternalSwitchStack.nasm | GCC
   Ia32/Non-existing.c
   Unaligned.c
   X86WriteIdtr.c
