@@ -39,8 +39,8 @@
   ../../Include/Library/OcGuardLib.h
 
 [Packages]
-  CloverPkg.dec
   MdePkg/MdePkg.dec
+  CloverPkg.dec
 #  OcSupportPkg/OcSupportPkg.dec
 
 [LibraryClasses]

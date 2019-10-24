@@ -34,8 +34,8 @@
   DeviceTreeLib.c
   ../../Include/Library/DeviceTreeLib.h
 [Packages]
-  CloverPkg.dec
   MdePkg/MdePkg.dec
+  CloverPkg.dec
 
 [LibraryClasses]
   BaseLib
