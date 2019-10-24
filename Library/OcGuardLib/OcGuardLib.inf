@@ -36,7 +36,6 @@
   UbsanPrintf.c
   Ubsan.c
   Ubsan.h
-  ../../Include/Library/OcGuardLib.h
 
 [Packages]
   MdePkg/MdePkg.dec
