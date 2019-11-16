@@ -932,6 +932,8 @@
 	</array>
 	<key>SMBIOS</key>
 	<dict>
+    <key>#SmbiosVersion</key>
+    <integer>0x0206</integer>
 		<key>#Slots</key>
 		<array>
 			<dict>
@@ -989,6 +991,8 @@
 		<string>MacBook1,1</string>
 		<key>#LocationInChassis</key>
 		<string>MLB</string>
+    <key>#MemoryRank</key>
+    <integer>2</integer>
 		<key>#Memory</key>
 		<dict>
 			<key>Modules</key>
