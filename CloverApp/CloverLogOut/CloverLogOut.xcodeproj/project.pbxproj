@@ -7,113 +7,112 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		953B8DEE2370BB1A007E36E3 /* bdmesg.swift in Sources */ = {isa = PBXBuildFile; fileRef = 953B8DED2370BB1A007E36E3 /* bdmesg.swift */; };
-		953B8DF02370BB5D007E36E3 /* NVRAM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 953B8DEF2370BB5C007E36E3 /* NVRAM.swift */; };
-		953B8DF22370BF5B007E36E3 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 953B8DF12370BF5A007E36E3 /* Extensions.swift */; };
-		953D98872377094A003B369E /* Disks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 953D98862377094A003B369E /* Disks.swift */; };
-		953DBFDF236F037400B0C4FB /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 953DBFDE236F037400B0C4FB /* main.swift */; };
-		954FF20E2371B13C00C3D94C /* DiskArbitration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 954FF20D2371B13C00C3D94C /* DiskArbitration.framework */; };
-		954FF2102371B16300C3D94C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 954FF20F2371B16300C3D94C /* IOKit.framework */; };
+		954BBE972381964F0032425F /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954BBE962381964F0032425F /* Shared.swift */; };
+		95524B7D238051AC005F6425 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95524B7C238051AC005F6425 /* main.swift */; };
+		95524B8A23805210005F6425 /* NVRAM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95524B8923805210005F6425 /* NVRAM.swift */; };
+		95524B8C2380521D005F6425 /* Disks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95524B8B2380521D005F6425 /* Disks.swift */; };
+		95524B8E2380522A005F6425 /* bdmesg.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95524B8D2380522A005F6425 /* bdmesg.swift */; };
+		95524B9023805233005F6425 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95524B8F23805232005F6425 /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		95524B77238051AC005F6425 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		953B8DED2370BB1A007E36E3 /* bdmesg.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = bdmesg.swift; path = ../../Clover/bdmesg.swift; sourceTree = "<group>"; };
-		953B8DEF2370BB5C007E36E3 /* NVRAM.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NVRAM.swift; path = ../../Clover/NVRAM.swift; sourceTree = "<group>"; };
-		953B8DF12370BF5A007E36E3 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = ../../Clover/Extensions.swift; sourceTree = "<group>"; };
-		953D98862377094A003B369E /* Disks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Disks.swift; path = ../../Clover/Disks.swift; sourceTree = "<group>"; };
-		953DBFDB236F037400B0C4FB /* CloverDaemonNew */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CloverDaemonNew; sourceTree = BUILT_PRODUCTS_DIR; };
-		953DBFDE236F037400B0C4FB /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		954FF20D2371B13C00C3D94C /* DiskArbitration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DiskArbitration.framework; path = System/Library/Frameworks/DiskArbitration.framework; sourceTree = SDKROOT; };
-		954FF20F2371B16300C3D94C /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		954BBE962381964F0032425F /* Shared.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Shared.swift; path = ../../Clover/Shared.swift; sourceTree = "<group>"; };
+		95524B79238051AC005F6425 /* CloverLogOut */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CloverLogOut; sourceTree = BUILT_PRODUCTS_DIR; };
+		95524B7C238051AC005F6425 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		95524B8923805210005F6425 /* NVRAM.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NVRAM.swift; path = ../../Clover/NVRAM.swift; sourceTree = "<group>"; };
+		95524B8B2380521D005F6425 /* Disks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Disks.swift; path = ../../Clover/Disks.swift; sourceTree = "<group>"; };
+		95524B8D2380522A005F6425 /* bdmesg.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = bdmesg.swift; path = ../../Clover/bdmesg.swift; sourceTree = "<group>"; };
+		95524B8F23805232005F6425 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = ../../Clover/Extensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		953DBFD8236F037400B0C4FB /* Frameworks */ = {
+		95524B76238051AC005F6425 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				954FF20E2371B13C00C3D94C /* DiskArbitration.framework in Frameworks */,
-				954FF2102371B16300C3D94C /* IOKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		953DBFD2236F037400B0C4FB = {
+		95524B70238051AC005F6425 = {
 			isa = PBXGroup;
 			children = (
-				953DBFDD236F037400B0C4FB /* CloverDaemonNew */,
-				953DBFDC236F037400B0C4FB /* Products */,
-				954FF20C2371B13C00C3D94C /* Frameworks */,
+				95524B7B238051AC005F6425 /* CloverLogOut */,
+				95524B7A238051AC005F6425 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		953DBFDC236F037400B0C4FB /* Products */ = {
+		95524B7A238051AC005F6425 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				953DBFDB236F037400B0C4FB /* CloverDaemonNew */,
+				95524B79238051AC005F6425 /* CloverLogOut */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		953DBFDD236F037400B0C4FB /* CloverDaemonNew */ = {
+		95524B7B238051AC005F6425 /* CloverLogOut */ = {
 			isa = PBXGroup;
 			children = (
-				953DBFDE236F037400B0C4FB /* main.swift */,
-				953D98862377094A003B369E /* Disks.swift */,
-				953B8DEF2370BB5C007E36E3 /* NVRAM.swift */,
-				953B8DED2370BB1A007E36E3 /* bdmesg.swift */,
-				953B8DF12370BF5A007E36E3 /* Extensions.swift */,
+				95524B7C238051AC005F6425 /* main.swift */,
+				954BBE962381964F0032425F /* Shared.swift */,
+				95524B8923805210005F6425 /* NVRAM.swift */,
+				95524B8B2380521D005F6425 /* Disks.swift */,
+				95524B8D2380522A005F6425 /* bdmesg.swift */,
+				95524B8F23805232005F6425 /* Extensions.swift */,
 			);
-			path = CloverDaemonNew;
-			sourceTree = "<group>";
-		};
-		954FF20C2371B13C00C3D94C /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				954FF20F2371B16300C3D94C /* IOKit.framework */,
-				954FF20D2371B13C00C3D94C /* DiskArbitration.framework */,
-			);
-			name = Frameworks;
+			path = CloverLogOut;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		953DBFDA236F037400B0C4FB /* CloverDaemonNew */ = {
+		95524B78238051AC005F6425 /* CloverLogOut */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 953DBFE2236F037400B0C4FB /* Build configuration list for PBXNativeTarget "CloverDaemonNew" */;
+			buildConfigurationList = 95524B80238051AC005F6425 /* Build configuration list for PBXNativeTarget "CloverLogOut" */;
 			buildPhases = (
-				953DBFD7236F037400B0C4FB /* Sources */,
-				953DBFD8236F037400B0C4FB /* Frameworks */,
+				95524B75238051AC005F6425 /* Sources */,
+				95524B76238051AC005F6425 /* Frameworks */,
+				95524B77238051AC005F6425 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = CloverDaemonNew;
-			productName = cloverDaemonSwift;
-			productReference = 953DBFDB236F037400B0C4FB /* CloverDaemonNew */;
+			name = CloverLogOut;
+			productName = CloverLogOut;
+			productReference = 95524B79238051AC005F6425 /* CloverLogOut */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		953DBFD3236F037400B0C4FB /* Project object */ = {
+		95524B71238051AC005F6425 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1120;
 				LastUpgradeCheck = 1120;
 				ORGANIZATIONNAME = CloverHackyColor;
 				TargetAttributes = {
-					953DBFDA236F037400B0C4FB = {
+					95524B78238051AC005F6425 = {
 						CreatedOnToolsVersion = 11.2;
-						LastSwiftMigration = 1120;
 					};
 				};
 			};
-			buildConfigurationList = 953DBFD6236F037400B0C4FB /* Build configuration list for PBXProject "CloverDaemonNew" */;
+			buildConfigurationList = 95524B74238051AC005F6425 /* Build configuration list for PBXProject "CloverLogOut" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -121,33 +120,34 @@
 				en,
 				Base,
 			);
-			mainGroup = 953DBFD2236F037400B0C4FB;
-			productRefGroup = 953DBFDC236F037400B0C4FB /* Products */;
+			mainGroup = 95524B70238051AC005F6425;
+			productRefGroup = 95524B7A238051AC005F6425 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				953DBFDA236F037400B0C4FB /* CloverDaemonNew */,
+				95524B78238051AC005F6425 /* CloverLogOut */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		953DBFD7236F037400B0C4FB /* Sources */ = {
+		95524B75238051AC005F6425 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				953B8DF22370BF5B007E36E3 /* Extensions.swift in Sources */,
-				953D98872377094A003B369E /* Disks.swift in Sources */,
-				953DBFDF236F037400B0C4FB /* main.swift in Sources */,
-				953B8DF02370BB5D007E36E3 /* NVRAM.swift in Sources */,
-				953B8DEE2370BB1A007E36E3 /* bdmesg.swift in Sources */,
+				954BBE972381964F0032425F /* Shared.swift in Sources */,
+				95524B9023805233005F6425 /* Extensions.swift in Sources */,
+				95524B8A23805210005F6425 /* NVRAM.swift in Sources */,
+				95524B8E2380522A005F6425 /* bdmesg.swift in Sources */,
+				95524B7D238051AC005F6425 /* main.swift in Sources */,
+				95524B8C2380521D005F6425 /* Disks.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		953DBFE0236F037400B0C4FB /* Debug */ = {
+		95524B7E238051AC005F6425 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -197,7 +197,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -207,7 +207,7 @@
 			};
 			name = Debug;
 		};
-		953DBFE1236F037400B0C4FB /* Release */ = {
+		95524B7F238051AC005F6425 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -251,7 +251,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -260,42 +260,22 @@
 			};
 			name = Release;
 		};
-		953DBFE3236F037400B0C4FB /* Debug */ = {
+		95524B81238051AC005F6425 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
-				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "";
-				SWIFT_OBJC_INTERFACE_HEADER_NAME = "";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
-		953DBFE4236F037400B0C4FB /* Release */ = {
+		95524B82238051AC005F6425 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				GCC_WARN_UNUSED_VARIABLE = NO;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
-				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "";
-				SWIFT_OBJC_INTERFACE_HEADER_NAME = "";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -303,25 +283,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		953DBFD6236F037400B0C4FB /* Build configuration list for PBXProject "CloverDaemonNew" */ = {
+		95524B74238051AC005F6425 /* Build configuration list for PBXProject "CloverLogOut" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				953DBFE0236F037400B0C4FB /* Debug */,
-				953DBFE1236F037400B0C4FB /* Release */,
+				95524B7E238051AC005F6425 /* Debug */,
+				95524B7F238051AC005F6425 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		953DBFE2236F037400B0C4FB /* Build configuration list for PBXNativeTarget "CloverDaemonNew" */ = {
+		95524B80238051AC005F6425 /* Build configuration list for PBXNativeTarget "CloverLogOut" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				953DBFE3236F037400B0C4FB /* Debug */,
-				953DBFE4236F037400B0C4FB /* Release */,
+				95524B81238051AC005F6425 /* Debug */,
+				95524B82238051AC005F6425 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 953DBFD3236F037400B0C4FB /* Project object */;
+	rootObject = 95524B71238051AC005F6425 /* Project object */;
 }

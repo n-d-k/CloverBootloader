@@ -1326,6 +1326,7 @@ typedef enum {
   MacBookPro152,
   MacBookPro153,
   MacBookPro154,
+  MacBookPro161,
   MacBookAir11,
   MacBookAir21,
   MacBookAir31,
@@ -1960,9 +1961,6 @@ DeleteNvramVariable (
 
 VOID
 ResetNvram (VOID);
-
-EFI_STATUS
-ResetEmuNvram (VOID);
 
 BOOLEAN
 IsDeletableVariable (
