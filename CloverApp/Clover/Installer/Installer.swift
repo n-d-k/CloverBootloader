@@ -35,7 +35,12 @@ class InstallerWindowController: NSWindowController, NSWindowDelegate {
     let wc = NSStoryboard(name: "Installer",
                           bundle: nil).instantiateController(withIdentifier: "InstallerWindow") as! InstallerWindowController
     let rev = findCloverRevision(at: Cloverv2Path.addPath("EFI")) ?? "0000"
-    wc.window?.title = "\("Clover Installer".locale) r\(rev)"
+    
+    var title = "\("Clover Installer".locale) r\(rev)"
+    if let hash = findCloverHashCommit(at: Cloverv2Path.addPath("EFI")) {
+      title = "\(title) (\(hash))"
+    }
+    wc.window?.title = title
     return wc
   }
 }
@@ -416,7 +421,7 @@ class InstallerViewController: NSViewController {
     }
     
     self.cloverEFICheck.state = .off
-    self.cloverEFIPressed(self.cloverEFICheck)
+    self.cloverEFIPressed(nil)
     
     // don't enable CloverEFI if boot sectors, nor bootloaders exists
     if self.boot0Pop.itemArray.count == 0 || self.boot2Pop.itemArray.count == 0 {
@@ -858,33 +863,74 @@ class InstallerViewController: NSViewController {
       }
     }
     
-    self.cloverEFIPressed(self.cloverEFICheck)
+    self.cloverEFIPressed(nil)
     self.populateDrivers()
   }
   
-  @IBAction func cloverEFIPressed(_ sender: NSButton!) {
-    self.bootSectCheck.isEnabled = sender.state == .on
-    self.boot2Pop.isEnabled = sender.state == .on
-    self.altBootCheck.isEnabled = sender.state == .on
-    self.bootSectPressed(self.bootSectCheck)
+  @IBAction func cloverEFIPressed(_ sender: NSButton?) {
+    self.bootSectCheck.isEnabled = self.cloverEFICheck.state == .on
+    self.boot2Pop.isEnabled = self.cloverEFICheck.state == .on
+    self.altBootCheck.isEnabled = self.cloverEFICheck.state == .on
+    self.bootSectPressed(nil)
 
+    if (sender != nil) {
+      if sender!.state == .on {
+        post(text: "Clover legacy BIOS boot sectors".locale,
+             add: false,
+             color: nil,
+             scroll: false)
+      } else {
+        post(text: "UEFI only".locale,
+             add: false,
+             color: nil,
+             scroll: false)
+      }
+    }
     if fm.fileExists(atPath: self.targetVol) {
       self.populateDrivers()
     }
   }
   
-  @IBAction func bootSectPressed(_ sender: NSButton!) {
-    self.boot0Pop.isEnabled = sender.state == .on
-    self.boot1Field.isEnabled = sender.state == .on
-    self.altBootPressed(self.altBootCheck)
+  @IBAction func bootSectPressed(_ sender: NSButton?) {
+    self.boot0Pop.isEnabled = self.bootSectCheck.state == .on
+    self.boot1Field.isEnabled = self.bootSectCheck.state == .on
+    self.altBootPressed(nil)
+    if (sender != nil) {
+      if sender!.state == .on {
+        post(text: "Clover legacy BIOS boot sectors".locale,
+             add: false,
+             color: nil,
+             scroll: false)
+      } else {
+        post(text: "Don't install any bootloader (boot0X, boot1X)".locale,
+             add: false,
+             color: nil,
+             scroll: false)
+      }
+    }
   }
   
-  @IBAction func altBootPressed(_ sender: NSButton!) {
+  @IBAction func altBootPressed(_ sender: NSButton?) {
     self.boot1Field.stringValue = getBoot1() ?? "?"
     self.boot1Field.placeholderString = self.boot1Field.stringValue
     if self.cloverEFICheck.state == .off || self.bootSectCheck.state == .off {
       self.boot1Field.stringValue = ""
     }
+    
+    if (sender != nil && sender!.state == .on) {
+      post(text: "Install alternative booting PBR".locale,
+           add: false,
+           color: nil,
+           scroll: false)
+    }
+  }
+  
+  @IBAction func boot0Selected(_ sender: NSPopUpButton) {
+    post(text: sender.titleOfSelectedItem!.locale, add: false, color: nil, scroll: false)
+  }
+  
+  @IBAction func boot2Selected(_ sender: NSPopUpButton) {
+    post(text: sender.titleOfSelectedItem!.locale, add: false, color: nil, scroll: false)
   }
   
   private func getBoot1() -> String? {
