@@ -412,6 +412,7 @@ VOID BltClearScreen(IN BOOLEAN ShowBanner) //ShowBanner always TRUE
 {
   EG_PIXEL *p1;
   INTN i, j, x, x1, x2, y, y1, y2;
+  /* Hide banner
   if (BanHeight < 2) {
     BanHeight = ((UGAHeight - (int)(LAYOUT_TOTAL_HEIGHT * GlobalConfig.Scale)) >> 1);
     //+ (int)(LAYOUT_TOTAL_HEIGHT * GlobalConfig.Scale); //LAYOUT_TOTAL_HEIGHT=376
@@ -429,12 +430,12 @@ VOID BltClearScreen(IN BOOLEAN ShowBanner) //ShowBanner always TRUE
    //     CopyMem(&BlueBackgroundPixel, &StdBackgroundPixel, sizeof(EG_PIXEL));
    //     DebugLog(1, "Text <%s> rendered\n", L"Clover");
         Banner = BuiltinIcon(BUILTIN_ICON_BANNER);
-        if (GlobalConfig.DarkEmbedded) {
+*/        if (GlobalConfig.DarkEmbedded) {
           CopyMem(&BlueBackgroundPixel, &DarkEmbeddedBackgroundPixel, sizeof(EG_PIXEL));
         } else {
           CopyMem(&BlueBackgroundPixel, &StdBackgroundPixel, sizeof(EG_PIXEL));
         }
-      } else  {
+ /*     } else  {
         Banner = egLoadImage(ThemeDir, GlobalConfig.BannerFileName, FALSE);
         if (Banner) {
           // Banner was changed, so copy into BlueBackgroundBixel first pixel of banner
@@ -491,6 +492,7 @@ VOID BltClearScreen(IN BOOLEAN ShowBanner) //ShowBanner always TRUE
     BannerPlace.Width = UGAWidth;
     BannerPlace.Height = BanHeight;
   }
+  */
   
   // Load Background and scale
   if (!BigBack && (GlobalConfig.BackgroundName != NULL)) {
