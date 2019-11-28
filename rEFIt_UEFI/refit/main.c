@@ -158,10 +158,11 @@ static EFI_STATUS StartEFILoadedImage(IN EFI_HANDLE ChildImageHandle,
                                     IN CHAR16 *ImageTitle,
                                     OUT UINTN *ErrorInStep)
 {
-  EFI_STATUS              Status, ReturnStatus;
-  EFI_LOADED_IMAGE        *ChildLoadedImage;
-  CHAR16                  ErrorInfo[256];
-  CHAR16                  *FullLoadOptions = NULL;
+  EFI_STATUS                       Status, ReturnStatus;
+  EFI_LOADED_IMAGE_PROTOCOL        *ChildLoadedImage;
+  CHAR16                           ErrorInfo[256];
+  CHAR16                           *FullLoadOptions = NULL;
+  EFI_SYSTEM_TABLE                 *NewSystemTable;
 
 //  DBG("Starting %s\n", ImageTitle);
   if (ErrorInStep != NULL) {
@@ -175,7 +176,7 @@ static EFI_STATUS StartEFILoadedImage(IN EFI_HANDLE ChildImageHandle,
 
   // set load options
   if (LoadOptions != NULL) {
-    ReturnStatus = Status = gBS->HandleProtocol(ChildImageHandle, &gEfiLoadedImageProtocolGuid, (VOID **) &ChildLoadedImage);
+    ReturnStatus = Status = gBS->HandleProtocol(ChildImageHandle, &gEfiLoadedImageProtocolGuid, (VOID *) &ChildLoadedImage);
     if (CheckError(Status, L"while getting a LoadedImageProtocol handle")) {
       if (ErrorInStep != NULL)
         *ErrorInStep = 2;
@@ -200,6 +201,15 @@ static EFI_STATUS StartEFILoadedImage(IN EFI_HANDLE ChildImageHandle,
   // close open file handles
   UninitRefitLib();
 
+  if (StrStr (ImageTitle, L"APFS.EFI") != NULL) {
+    DBG("Using apfs.efi driver, turn on NullTextOutput.\n");
+    NewSystemTable = AllocateNullTextOutSystemTable (gST);
+    if (NewSystemTable == NULL) {
+      goto bailout;
+    }
+    ChildLoadedImage->SystemTable = NewSystemTable;
+  }
+  
   // turn control over to the image
   //
   // Before calling the image, enable the Watchdog Timer for

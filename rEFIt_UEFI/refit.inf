@@ -137,7 +137,8 @@
 #	Platform/UsbMass.h
 #	Platform/UsbMassBoot.h
 #	Platform/UsbMassImpl.h
-#	Platform/VesaBiosExtensions.h
+	Platform/NullTextOutput.h
+  Platform/NullTextOutput.c
 	Platform/b64cdecode.h
 	Platform/b64cdecode.c
 	Platform/FixBiosDsdt.c

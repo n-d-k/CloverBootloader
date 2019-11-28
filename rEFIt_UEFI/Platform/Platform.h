@@ -79,7 +79,7 @@ Headers collection for procedures
 #include "../refit/IO.h"
 #include "device_inject.h"
 #include "kext_inject.h"
-//#include "entry_scan.h"
+#include "NullTextOutput.h"
 
 #define CLOVER_SIGN             SIGNATURE_32('C','l','v','r')
 #define NON_APPLE_SMC_SIGNATURE SIGNATURE_64('S','M','C','H','E','L','P','E')
