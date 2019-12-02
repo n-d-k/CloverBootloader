@@ -34,12 +34,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "entry_scan.h"
-//#include "Platform.h"
-//#include "../include/Handle.h"
-#include "nanosvg.h"
-
-#include "Version.h"
+#include <entry_scan.h>
+#include <nanosvg.h>
+#include <Version.h>
 
 #ifndef DEBUG_ALL
 #define DEBUG_MAIN 1
@@ -57,64 +54,73 @@
 #define HIBERNATE 0
 #endif
 
-
 #ifndef CHECK_SMC
 #define CHECK_SMC 0
 #endif
 
-
 // variables
 #ifdef FIRMWARE_REVISION
-CHAR16 *gFirmwareRevision = FIRMWARE_REVISION;
+CHAR16                            *gFirmwareRevision = FIRMWARE_REVISION;
 #else
-CHAR16 *gFirmwareRevision = NULL;
+CHAR16                            *gFirmwareRevision = NULL;
 #endif
 
-BOOLEAN                 gGuiIsReady     = FALSE;
-BOOLEAN                 gThemeNeedInit  = TRUE;
-BOOLEAN                 DoHibernateWake = FALSE;
-BOOLEAN                 APFSSupport     = FALSE;
+BOOLEAN                           gGuiIsReady     = FALSE;
+BOOLEAN                           gThemeNeedInit  = TRUE;
+BOOLEAN                           DoHibernateWake = FALSE;
+BOOLEAN                           APFSSupport     = FALSE;
+EFI_RUNTIME_SERVICES              *gRS;
+DRIVERS_FLAGS                     gDriversFlags;
+EMU_VARIABLE_CONTROL_PROTOCOL     *gEmuVariableControl = NULL;
+EFI_HANDLE                        ConsoleInHandle;
+EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL *SimpleTextEx;
+EFI_KEY_DATA                      KeyData;
 
-//extern EFI_HANDLE              gImageHandle;
-//extern EFI_SYSTEM_TABLE*       gST;
-//extern EFI_BOOT_SERVICES*      gBS;
-//extern EFI_DXE_SERVICES*       gDS;
-EFI_RUNTIME_SERVICES*   gRS;
+extern UINTN                      ThemesNum;
+extern CHAR16                     *ThemesList[];
+extern UINTN                      ConfigsNum;
+extern CHAR16                     *ConfigsList[];
+extern UINTN                      DsdtsNum;
+extern CHAR16                     *DsdtsList[];
+extern UINTN                      AudioNum;
+extern HDA_OUTPUTS                AudioList[20];
+extern EFI_AUDIO_IO_PROTOCOL      *AudioIo;
 
-DRIVERS_FLAGS gDriversFlags;  //the initializer is not needed for global variables
+extern
+VOID
+HelpRefit (
+  VOID
+  );
 
-EMU_VARIABLE_CONTROL_PROTOCOL *gEmuVariableControl = NULL;
+extern
+VOID
+AboutRefit (
+  VOID
+  );
 
-EFI_HANDLE ConsoleInHandle;
-EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL* SimpleTextEx;
-EFI_KEY_DATA KeyData;
+extern
+BOOLEAN
+BooterPatch (
+  IN UINT8             *BooterData,
+  IN UINT64            BooterSize,
+  LOADER_ENTRY         *Entry
+  );
 
-extern VOID HelpRefit(VOID);
-extern VOID AboutRefit(VOID);
-extern BOOLEAN BooterPatch(IN UINT8 *BooterData, IN UINT64 BooterSize, LOADER_ENTRY *Entry);
-
-extern UINTN                ThemesNum;
-extern CHAR16               *ThemesList[];
-extern UINTN                 ConfigsNum;
-extern CHAR16                *ConfigsList[];
-extern UINTN                 DsdtsNum;
-extern CHAR16                *DsdtsList[];
-extern UINTN                 AudioNum;
-extern HDA_OUTPUTS           AudioList[20];
-extern EFI_AUDIO_IO_PROTOCOL *AudioIo;
-
-
-static EFI_STATUS LoadEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
-                                    IN CHAR16 *ImageTitle,
-                                    OUT UINTN *ErrorInStep,
-                                    OUT EFI_HANDLE *NewImageHandle)
+STATIC
+EFI_STATUS
+LoadEFIImageList (
+  IN EFI_DEVICE_PATH   **DevicePaths,
+  IN CHAR16            *ImageTitle,
+  OUT UINTN            *ErrorInStep,
+  OUT EFI_HANDLE       *NewImageHandle
+  )
 {
-  EFI_STATUS              Status, ReturnStatus;
-  EFI_HANDLE              ChildImageHandle = 0;
-  UINTN                   DevicePathIndex;
-  CHAR16                  ErrorInfo[256];
+  EFI_STATUS           Status, ReturnStatus;
+  EFI_HANDLE           ChildImageHandle = 0;
+  UINTN                DevicePathIndex;
+  CHAR16               ErrorInfo[256];
 
-  DBG("Loading %s", ImageTitle);
+  DBG ("Loading %s", ImageTitle);
   if (ErrorInStep != NULL) {
     *ErrorInStep = 0;
   }
@@ -127,13 +133,15 @@ static EFI_STATUS LoadEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
   for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
     ReturnStatus = Status = gBS->LoadImage(FALSE, SelfImageHandle, DevicePaths[DevicePathIndex], NULL, 0, &ChildImageHandle);
     DBG("  status=%r", Status);
-    if (ReturnStatus != EFI_NOT_FOUND)
+    if (ReturnStatus != EFI_NOT_FOUND) {
       break;
+    }
   }
   UnicodeSPrint(ErrorInfo, 512, L"while loading %s", ImageTitle);
   if (CheckError(Status, ErrorInfo)) {
-    if (ErrorInStep != NULL)
+    if (ErrorInStep != NULL) {
       *ErrorInStep = 1;
+    }
     PauseForKey(L"press any key");
     goto bailout;
   }
@@ -146,23 +154,28 @@ static EFI_STATUS LoadEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
   }
 
   // unload the image, we don't care if it works or not...
-  Status = gBS->UnloadImage(ChildImageHandle);
+  Status = gBS->UnloadImage (ChildImageHandle);
+
 bailout:
-  DBG("\n");
+  DBG ("\n");
   return ReturnStatus;
 }
 
-
-static EFI_STATUS StartEFILoadedImage(IN EFI_HANDLE ChildImageHandle,
-                                    IN CHAR16 *LoadOptions, IN CHAR16 *LoadOptionsPrefix,
-                                    IN CHAR16 *ImageTitle,
-                                    OUT UINTN *ErrorInStep)
+STATIC
+EFI_STATUS
+StartEFILoadedImage (
+  IN EFI_HANDLE             ChildImageHandle,
+  IN CHAR16                 *LoadOptions,
+  IN CHAR16                 *LoadOptionsPrefix,
+  IN CHAR16                 *ImageTitle,
+  OUT UINTN                 *ErrorInStep
+  )
 {
-  EFI_STATUS                       Status, ReturnStatus;
-  EFI_LOADED_IMAGE_PROTOCOL        *ChildLoadedImage;
-  CHAR16                           ErrorInfo[256];
-  CHAR16                           *FullLoadOptions = NULL;
-  EFI_SYSTEM_TABLE                 *NewSystemTable;
+  EFI_STATUS                Status, ReturnStatus;
+  EFI_LOADED_IMAGE_PROTOCOL *ChildLoadedImage;
+  CHAR16                    ErrorInfo[256];
+  CHAR16                    *FullLoadOptions = NULL;
+  EFI_SYSTEM_TABLE          *NewSystemTable;
 
 //  DBG("Starting %s\n", ImageTitle);
   if (ErrorInStep != NULL) {
@@ -176,8 +189,8 @@ static EFI_STATUS StartEFILoadedImage(IN EFI_HANDLE ChildImageHandle,
 
   // set load options
   if (LoadOptions != NULL) {
-    ReturnStatus = Status = gBS->HandleProtocol(ChildImageHandle, &gEfiLoadedImageProtocolGuid, (VOID *) &ChildLoadedImage);
-    if (CheckError(Status, L"while getting a LoadedImageProtocol handle")) {
+    ReturnStatus = Status = gBS->HandleProtocol (ChildImageHandle, &gEfiLoadedImageProtocolGuid, (VOID *) &ChildLoadedImage);
+    if (CheckError (Status, L"while getting a LoadedImageProtocol handle")) {
       if (ErrorInStep != NULL)
         *ErrorInStep = 2;
       goto bailout_unload;
@@ -202,7 +215,7 @@ static EFI_STATUS StartEFILoadedImage(IN EFI_HANDLE ChildImageHandle,
   UninitRefitLib();
 
   if (StrStr (ImageTitle, L"APFS.EFI") != NULL) {
-    DBG("Using apfs.efi driver, turn on NullTextOutput.\n");
+    DBG ("Using apfs.efi driver, turn on NullTextOutput.\n");
     NewSystemTable = AllocateNullTextOutSystemTable (gST);
     if (NewSystemTable == NULL) {
       goto bailout;
@@ -247,11 +260,14 @@ bailout:
   return ReturnStatus;
 }
 
-
-static EFI_STATUS LoadEFIImage(IN EFI_DEVICE_PATH *DevicePath,
-                                IN CHAR16 *ImageTitle,
-                                OUT UINTN *ErrorInStep,
-                                OUT EFI_HANDLE *NewImageHandle)
+STATIC
+EFI_STATUS
+LoadEFIImage (
+  IN EFI_DEVICE_PATH      *DevicePath,
+  IN CHAR16               *ImageTitle,
+  OUT UINTN               *ErrorInStep,
+  OUT EFI_HANDLE          *NewImageHandle
+  )
 {
   EFI_DEVICE_PATH *DevicePaths[2];
 
@@ -259,7 +275,7 @@ static EFI_STATUS LoadEFIImage(IN EFI_DEVICE_PATH *DevicePath,
   // Verify secure boot policy
   if (gSettings.SecureBoot && gSettings.SecureBootSetupMode) {
     // Only verify if in forced secure boot mode
-    EFI_STATUS Status = VerifySecureBootImage(DevicePath);
+    EFI_STATUS Status = VerifySecureBootImage (DevicePath);
     if (EFI_ERROR(Status)) {
       return Status;
     }
@@ -273,11 +289,16 @@ static EFI_STATUS LoadEFIImage(IN EFI_DEVICE_PATH *DevicePath,
 }
 
 
-static EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
-                                IN CHAR16 *LoadOptions, IN CHAR16 *LoadOptionsPrefix,
-                                IN CHAR16 *ImageTitle,
-                                OUT UINTN *ErrorInStep,
-                                OUT EFI_HANDLE *NewImageHandle)
+STATIC
+EFI_STATUS
+StartEFIImage (
+  IN EFI_DEVICE_PATH      *DevicePath,
+  IN CHAR16               *LoadOptions,
+  IN CHAR16               *LoadOptionsPrefix,
+  IN CHAR16               *ImageTitle,
+  OUT UINTN               *ErrorInStep,
+  OUT EFI_HANDLE          *NewImageHandle
+  )
 {
   EFI_STATUS Status;
   EFI_HANDLE ChildImageHandle = NULL;
@@ -293,29 +314,9 @@ static EFI_STATUS StartEFIImage(IN EFI_DEVICE_PATH *DevicePath,
   return Status;
 }
 
-/*
-static EFI_STATUS StartEFIImageList(IN EFI_DEVICE_PATH **DevicePaths,
-                                IN CHAR16 *LoadOptions, IN CHAR16 *LoadOptionsPrefix,
-                                IN CHAR16 *ImageTitle,
-                                OUT UINTN *ErrorInStep,
-                                OUT EFI_HANDLE *NewImageHandle)
-{
-  EFI_STATUS Status;
-  EFI_HANDLE ChildImageHandle = NULL;
-
-  Status = LoadEFIImageList(DevicePaths, ImageTitle, ErrorInStep, &ChildImageHandle);
-  if (!EFI_ERROR(Status)) {
-    Status = StartEFILoadedImage(ChildImageHandle, LoadOptions, LoadOptionsPrefix, ImageTitle, ErrorInStep);
-  }
-
-  if (NewImageHandle != NULL) {
-      *NewImageHandle = ChildImageHandle;
-  }
-  return Status;
-}
-*/
-
-static CHAR8 *SearchString (
+STATIC
+CHAR8 *
+SearchString (
   IN  CHAR8       *Source,
   IN  UINT64      SourceSize,
   IN  CHAR8       *Search,
@@ -333,6 +334,21 @@ static CHAR8 *SearchString (
   }
   return NULL;
 }
+
+//
+// Null ConOut OutputString() implementation - for blocking
+// text output from boot.efi when booting in graphics mode
+//
+EFI_STATUS
+EFIAPI
+NullConOutOutputString (
+  IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL      *This,
+  IN CHAR16                               *String
+  )
+{
+  return EFI_SUCCESS;
+}
+
 #ifdef DUMP_KERNEL_KEXT_PATCHES
 VOID DumpKernelAndKextPatches(KERNEL_AND_KEXT_PATCHES *Patches)
 {
@@ -374,7 +390,11 @@ VOID DumpKernelAndKextPatches(KERNEL_AND_KEXT_PATCHES *Patches)
   }
 }
 #endif
-VOID FilterKextPatches(IN LOADER_ENTRY *Entry) //zzzz
+
+VOID
+FilterKextPatches (
+  IN LOADER_ENTRY     *Entry
+  )
 {
   if (gSettings.KextPatchesAllowed && (Entry->KernelAndKextPatches->KextPatches != NULL) && Entry->KernelAndKextPatches->NrKexts) {
     INTN i;
@@ -405,7 +425,10 @@ VOID FilterKextPatches(IN LOADER_ENTRY *Entry) //zzzz
   }
 }
 
-VOID FilterKernelPatches(IN LOADER_ENTRY *Entry)
+VOID
+FilterKernelPatches (
+  IN LOADER_ENTRY     *Entry
+  )
 {
   if (gSettings.KernelPatchesAllowed && (Entry->KernelAndKextPatches->KernelPatches != NULL) && Entry->KernelAndKextPatches->NrKernels) {
     INTN i = 0;
@@ -435,7 +458,10 @@ VOID FilterKernelPatches(IN LOADER_ENTRY *Entry)
   }
 }
 
-VOID FilterBootPatches(IN LOADER_ENTRY *Entry)
+VOID
+FilterBootPatches (
+  IN LOADER_ENTRY     *Entry
+  )
 {
   if ((Entry->KernelAndKextPatches->BootPatches != NULL) && Entry->KernelAndKextPatches->NrBoots) {
     INTN i = 0;
@@ -466,7 +492,10 @@ VOID FilterBootPatches(IN LOADER_ENTRY *Entry)
   }
 }
 
-VOID ReadSIPCfg()
+VOID
+ReadSIPCfg (
+  VOID
+  )
 {
   UINT32 csrCfg = gSettings.CsrActiveConfig & CSR_VALID_FLAGS;
   CHAR16 *csrLog = AllocateZeroPool(SVALUE_MAX_SIZE);
@@ -493,27 +522,21 @@ VOID ReadSIPCfg()
     StrCatS(csrLog, SVALUE_MAX_SIZE/2, PoolPrint(L"%a%a", StrLen(csrLog) ? " | " : "", "CSR_ALLOW_UNAPPROVED_KEXTS"));
     
   if (StrLen(csrLog)) {
-    DBG("CSR_CFG: %s\n", csrLog);
+    DBG ("CSR_CFG: %s\n", csrLog);
   }
 
-  FreePool(csrLog);
+  FreePool (csrLog);
 }
-
-//
-// Null ConOut OutputString() implementation - for blocking
-// text output from boot.efi when booting in graphics mode
-//
-EFI_STATUS EFIAPI
-NullConOutOutputString(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This, IN CHAR16 *String) {
-  return EFI_SUCCESS;
-}
-
 //
 // EFI OS loader functions
 //
 EG_PIXEL DarkBackgroundPixel  = { 0x0, 0x0, 0x0, 0xFF };
 
-static VOID StartLoader(IN LOADER_ENTRY *Entry)
+STATIC
+VOID
+StartLoader (
+  IN LOADER_ENTRY     *Entry
+  )
 {
   EFI_STATUS              Status;
   EFI_TEXT_STRING         ConOutOutputString = 0;
@@ -1009,7 +1032,11 @@ static EFI_DEVICE_PATH *LegacyLoaderList[] = {
 #define MAX_DISCOVERED_PATHS (16)
 //#define PREBOOT_LOG L"EFI\\CLOVER\\misc\\preboot.log"
 
-static VOID StartLegacy(IN LEGACY_ENTRY *Entry)
+STATIC
+VOID
+StartLegacy (
+  IN LEGACY_ENTRY     *Entry
+  )
 {
     EFI_STATUS          Status = EFI_UNSUPPORTED;
     EG_IMAGE            *BootLogoImage;
@@ -1092,7 +1119,11 @@ static VOID StartLegacy(IN LEGACY_ENTRY *Entry)
 // pre-boot tool functions
 //
 
-static VOID StartTool(IN LOADER_ENTRY *Entry)
+STATIC
+VOID
+StartTool (
+  IN LOADER_ENTRY     *Entry
+  )
 {
   DBG("Start Tool: %s\n", Entry->LoaderPath);
   egClearScreen(&DarkBackgroundPixel);
@@ -1108,7 +1139,13 @@ static VOID StartTool(IN LOADER_ENTRY *Entry)
 // pre-boot driver functions
 //
 
-static VOID ScanDriverDir(IN CHAR16 *Path, OUT EFI_HANDLE **DriversToConnect, OUT UINTN *DriversToConnectNum)
+STATIC
+VOID
+ScanDriverDir (
+  IN CHAR16              *Path,
+  OUT EFI_HANDLE         **DriversToConnect,
+  OUT UINTN              *DriversToConnectNum
+  )
 {
   EFI_STATUS              Status;
   REFIT_DIR_ITER          DirIter;
@@ -1254,7 +1291,10 @@ static VOID ScanDriverDir(IN CHAR16 *Path, OUT EFI_HANDLE **DriversToConnect, OU
  * To fix it: we will disconnect drivers that connected to DiskIo BY_DRIVER
  * if this is partition volume and if those drivers did not produce file system.
  */
-VOID DisconnectInvalidDiskIoChildDrivers(VOID)
+VOID
+DisconnectInvalidDiskIoChildDrivers (
+  VOID
+  )
 {
   EFI_STATUS                            Status;
   UINTN                                 HandleCount = 0;
@@ -1361,7 +1401,10 @@ VOID DisconnectInvalidDiskIoChildDrivers(VOID)
   }
 }
 
-VOID DisconnectSomeDevices(VOID)
+VOID
+DisconnectSomeDevices (
+  VOID
+  )
 {
   EFI_STATUS              Status;
   UINTN                   HandleCount;
@@ -1495,7 +1538,10 @@ VOID DisconnectSomeDevices(VOID)
 }
 
 
-VOID PatchVideoBios(UINT8 *Edid)
+VOID
+PatchVideoBios (
+  UINT8     *Edid
+ )
 {
 
   if (gSettings.PatchVBiosBytesCount > 0 && gSettings.PatchVBiosBytes != NULL) {
@@ -1507,8 +1553,11 @@ VOID PatchVideoBios(UINT8 *Edid)
   }
 }
 
-
-static VOID LoadDrivers(VOID)
+STATIC
+VOID
+LoadDrivers (
+  VOID
+  )
 {
   EFI_STATUS  Status;
   EFI_HANDLE  *DriversToConnect = NULL;
@@ -1587,8 +1636,10 @@ static VOID LoadDrivers(VOID)
   }
 }
 
-
-INTN FindDefaultEntry(VOID)
+INTN
+FindDefaultEntry (
+  VOID
+  )
 {
   INTN                Index = -1;
   REFIT_VOLUME        *Volume;
@@ -1597,7 +1648,6 @@ INTN FindDefaultEntry(VOID)
 
 //  DBG("FindDefaultEntry ...\n");
   //DbgHeader("FindDefaultEntry");
-
   //
   // try to detect volume set by Startup Disk or previous Clover selection
   // with broken nvram this requires emulation to be installed.
@@ -1616,7 +1666,6 @@ INTN FindDefaultEntry(VOID)
     }
     return Index;
   }
-
   //
   // if not found, then try DefaultVolume from config.plist
   // if not null or empty, search volume that matches gSettings.DefaultVolume
@@ -1667,7 +1716,10 @@ INTN FindDefaultEntry(VOID)
   return -1;
 }
 
-VOID SetVariablesFromNvram()
+VOID
+SetVariablesFromNvram (
+  VOID
+  )
 {
   CHAR8  *tmpString;
   UINTN   Size = 0;
@@ -1748,7 +1800,10 @@ VOID SetVariablesFromNvram()
 
 }
 
-VOID ResetNvram () 
+VOID
+ResetNvram (
+  VOID
+  )
   {
     if (gFirmwareClover || gDriversFlags.EmuVariableLoaded) {
       if (gEmuVariableControl != NULL) {
@@ -1763,16 +1818,12 @@ VOID ResetNvram ()
         gEmuVariableControl->UninstallEmulation(gEmuVariableControl);
       }
     }
-
-    // Attempt warm reboot
-//    gRS->ResetSystem(EfiResetWarm, EFI_SUCCESS, 0, NULL);
-    // Warm reboot may not be supported attempt cold reboot
-//    gRS->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
-    // Terminate the screen and just exit
-//    TerminateScreen();
 }
 
-VOID SetOEMPath(CHAR16 *ConfName)
+VOID
+SetOEMPath (
+  CHAR16      *ConfName
+  )
   {
     if (ConfName == NULL) {
       OEMPath = L"EFI\\CLOVER";
@@ -1818,24 +1869,30 @@ EFI_GUID APFSSignature       = {0xBE74FCF7, 0x0B7C, 0x49F3, { 0x91, 0x47, 0x01, 
 //IN DevicePath
 //Out: EFI_GUID 
 //null if it is not APFS part
-EFI_GUID *APFSPartitionUUIDExtract(
+EFI_GUID *
+APFSPartitionUUIDExtract (
   IN EFI_DEVICE_PATH_PROTOCOL *DevicePath
   )
 {
-  while (!IsDevicePathEndType(DevicePath) &&
-         !(DevicePathType(DevicePath) == MEDIA_DEVICE_PATH && DevicePathSubType (DevicePath) == MEDIA_VENDOR_DP)) {
-    DevicePath = NextDevicePathNode(DevicePath);
+  while (!IsDevicePathEndType (DevicePath) &&
+         !(DevicePathType (DevicePath) == MEDIA_DEVICE_PATH &&
+         DevicePathSubType (DevicePath) == MEDIA_VENDOR_DP)) {
+    DevicePath = NextDevicePathNode (DevicePath);
   }
-  if (DevicePathType(DevicePath) == MEDIA_DEVICE_PATH && DevicePathSubType (DevicePath) == MEDIA_VENDOR_DP) {
+  if (DevicePathType (DevicePath) == MEDIA_DEVICE_PATH && DevicePathSubType (DevicePath) == MEDIA_VENDOR_DP) {
     //Check that vendor-assigned GUID defines APFS Container Partition
-    if (StriCmp(GuidLEToStr((EFI_GUID *)((UINT8 *)DevicePath+0x04)),GuidLEToStr(&APFSSignature)) == 0 ) {
-      return (EFI_GUID *)((UINT8 *)DevicePath+0x14);
+    if (StriCmp (GuidLEToStr ((EFI_GUID *) ((UINT8 *) DevicePath + 0x04)), GuidLEToStr (&APFSSignature)) == 0 ) {
+      return (EFI_GUID *) ((UINT8 *) DevicePath + 0x14);
     }
   }         
   return NULL;
 }
 
-UINT8 *APFSContainer_Support(VOID) {
+UINT8 *
+APFSContainer_Support (
+  VOID
+  )
+{
   /* 
    * S. Mtr 2017
    * APFS Container partition support
@@ -1843,7 +1900,7 @@ UINT8 *APFSContainer_Support(VOID) {
    * edit: 17.06.2017
    * Fiil UUIDBank only with APFS container UUIDs
    */
-  UINTN                     VolumeIndex;
+  UINTN                    VolumeIndex;
   REFIT_VOLUME             *Volume;
   EFI_GUID                 *TmpUUID    = NULL;
 
@@ -1871,7 +1928,10 @@ CHAR16  APFSInstallPlistPath[79] = L"\\00000000-0000-0000-0000-000000000000\\com
 CHAR16  APFSRecPlistPath[58]     = L"\\00000000-0000-0000-0000-000000000000\\SystemVersion.plist";
   
 
-VOID SystemVersionInit(VOID)
+VOID
+SystemVersionInit (
+  VOID
+  )
 {
   //Plists iterators
   UINTN      SysIter            = 2;
@@ -1977,8 +2037,10 @@ VOID SystemVersionInit(VOID)
 //
 EFI_STATUS
 EFIAPI
-RefitMain (IN EFI_HANDLE           ImageHandle,
-           IN EFI_SYSTEM_TABLE     *SystemTable)
+RefitMain (
+  IN EFI_HANDLE           ImageHandle,
+  IN EFI_SYSTEM_TABLE     *SystemTable
+  )
 {
   EFI_STATUS Status;
   BOOLEAN           MainLoopRunning = TRUE;
@@ -1990,8 +2052,6 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
   INTN              DefaultIndex;
   UINTN             MenuExit;
   UINTN             Size, i;
-	//UINT64            TscDiv;
-	//UINT64            TscRemainder = 0;
   LOADER_ENTRY      *LoaderEntry;
   CHAR16            *ConfName = NULL;
   TagPtr            smbiosTags = NULL;
@@ -2001,57 +2061,47 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
   BOOLEAN           HaveDefaultVolume;
   CHAR16            *FirstMessage;
 
-  // CHAR16            *InputBuffer; //, *Y;
-  //  EFI_INPUT_KEY Key;
+  gCPUStructure.TSCCalibr = GetMemLogTscTicksPerSecond (); //ticks for 1second
 
-  // Init assets dir: misc
-  /*Status = */ //egMkDir(SelfRootDir,  L"EFI\\CLOVER\\misc");
-  //Should apply to: "ACPI/origin/" too
-
-  // get TSC freq and init MemLog if needed
-  gCPUStructure.TSCCalibr = GetMemLogTscTicksPerSecond(); //ticks for 1second
-  //GlobalConfig.TextOnly = TRUE;
-
-  // bootstrap
-  gST       = SystemTable;
-  gImageHandle  = ImageHandle;
-  gBS       = SystemTable->BootServices;
-  gRS       = SystemTable->RuntimeServices;
-  /*Status = */EfiGetSystemConfigurationTable (&gEfiDxeServicesTableGuid, (VOID **) &gDS);
-  
+  // Bootstrap
+  gST             = SystemTable;
+  gImageHandle    = ImageHandle;
+  gBS             = SystemTable->BootServices;
+  gRS             = SystemTable->RuntimeServices;
   ConsoleInHandle = SystemTable->ConsoleInHandle;
   
-
-  gRS->GetTime(&Now, NULL);
+  EfiGetSystemConfigurationTable (&gEfiDxeServicesTableGuid, (VOID **) &gDS);
+  
+  gRS->GetTime (&Now, NULL);
 
   // firmware detection
   gFirmwareClover = StrCmp(gST->FirmwareVendor, L"CLOVER") == 0;
   if (!gFirmwareRevision) {
     gFirmwareRevision = PoolPrint(L"%d", gST->FirmwareRevision);
   }
-  InitializeConsoleSim();
-  InitBooterLog();
-  ZeroMem((VOID*)&gGraphics[0], sizeof(GFX_PROPERTIES) * 4);
-  ZeroMem((VOID*)&gAudios[0], sizeof(HDA_PROPERTIES) * 4);
+  InitializeConsoleSim ();
+  InitBooterLog ();
+  ZeroMem ((VOID*) &gGraphics[0], sizeof (GFX_PROPERTIES) * 4);
+  ZeroMem ((VOID*) &gAudios[0], sizeof (HDA_PROPERTIES) * 4);
 
-  DBG("\n");
+  DBG ("\n");
   if (Now.TimeZone < -1440 || Now.TimeZone > 1440) {
-    MsgLog("Now is %02d.%02d.%d,  %02d:%02d:%02d (GMT)\n",
-           Now.Day, Now.Month, Now.Year, Now.Hour, Now.Minute, Now.Second);
+    MsgLog ("Now is %02d.%02d.%d,  %02d:%02d:%02d (GMT)\n",
+      Now.Day, Now.Month, Now.Year, Now.Hour, Now.Minute, Now.Second);
   } else {
-    MsgLog("Now is %02d.%02d.%d,  %02d:%02d:%02d (GMT+%d)\n",
+    MsgLog ("Now is %02d.%02d.%d,  %02d:%02d:%02d (GMT+%d)\n",
       Now.Day, Now.Month, Now.Year, Now.Hour, Now.Minute, Now.Second, GlobalConfig.Timezone);
   }
-  //MsgLog("Starting Clover rev %s on %s EFI\n", FIRMWARE_REVISION, gST->FirmwareVendor);
-  MsgLog("Starting %a on %s EFI\n", REVISION_STR, gST->FirmwareVendor);
+  MsgLog ("Starting %a on %s EFI\n", REVISION_STR, gST->FirmwareVendor);
 
   #ifdef BUILDINFOS_STR
-    DBG("Build with: [%a]\n", BUILDINFOS_STR);
+    DBG ("Build with: [%a]\n", BUILDINFOS_STR);
   #endif // BUILDINFOS_STR
 
-  Status = InitRefitLib(gImageHandle);
-  if (EFI_ERROR(Status))
+  Status = InitRefitLib (gImageHandle);
+  if (EFI_ERROR(Status)) {
     return Status;
+  }
   //dumping SETTING structure
   // if you change something in Platform.h, please uncomment and test that all offsets
   // are natural aligned i.e. pointers are 8 bytes aligned
@@ -2083,18 +2133,18 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
 
   // disable EFI watchdog timer
   gBS->SetWatchdogTimer(0x0000, 0x0000, 0x0000, NULL);
-  ZeroMem((VOID*)&gSettings, sizeof(SETTINGS_DATA));
+  ZeroMem ((VOID*) &gSettings, sizeof (SETTINGS_DATA));
 
-  Status = InitializeUnicodeCollationProtocol();
+  Status = InitializeUnicodeCollationProtocol ();
   if (EFI_ERROR(Status)) {
-    DBG("UnicodeCollation Status=%r\n", Status);
+    DBG ("UnicodeCollation Status=%r\n", Status);
   }
   
-  Status = gBS->HandleProtocol(ConsoleInHandle, &gEfiSimpleTextInputExProtocolGuid, (VOID **)&SimpleTextEx);
-  if ( EFI_ERROR (Status) ) {
+  Status = gBS->HandleProtocol (ConsoleInHandle, &gEfiSimpleTextInputExProtocolGuid, (VOID **) &SimpleTextEx);
+  if (EFI_ERROR (Status)) {
     SimpleTextEx = NULL;
   }
-  DBG("SimpleTextEx Status=%r\n", Status);
+  DBG ("SimpleTextEx Status=%r\n", Status);
 
   PrepatchSmbios();
 
@@ -2103,32 +2153,32 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
 //#endif
 
   //replace / with _
-  Size = iStrLen(gSettings.OEMProduct, 64);
+  Size = iStrLen (gSettings.OEMProduct, 64);
   for (i=0; i<Size; i++) {
     if (gSettings.OEMProduct[i] == 0x2F) {
       gSettings.OEMProduct[i] = 0x5F;
     }
   }
-  Size = iStrLen(gSettings.OEMBoard, 64);
+  Size = iStrLen (gSettings.OEMBoard, 64);
   for (i=0; i<Size; i++) {
     if (gSettings.OEMBoard[i] == 0x2F) {
       gSettings.OEMBoard[i] = 0x5F;
     }
   }
-  DBG("Running on: '%a' with board '%a'\n", gSettings.OEMProduct, gSettings.OEMBoard);
+  DBG ("Running on: '%a' with board '%a'\n", gSettings.OEMProduct, gSettings.OEMBoard);
 
-  GetCPUProperties();
-  GetDevices();
-  GetDefaultSettings();
+  GetCPUProperties ();
+  GetDevices ();
+  GetDefaultSettings ();
 
   // LoadOptions Parsing
-  DBG("Clover load options size = %d bytes\n", SelfLoadedImage->LoadOptionsSize);
+  DBG ("Clover load options size = %d bytes\n", SelfLoadedImage->LoadOptionsSize);
   if ((SelfLoadedImage->LoadOptions != NULL) &&
       (SelfLoadedImage->LoadOptionsSize != 0)){
-    if (*(UINT32*)SelfLoadedImage->LoadOptions == CLOVER_SIGN) {
-      GetBootFromOption();
+    if (*(UINT32*) SelfLoadedImage->LoadOptions == CLOVER_SIGN) {
+      GetBootFromOption ();
     } else {
-      ParseLoadOptions(&ConfName, &gConfigDict[1]);
+      ParseLoadOptions (&ConfName, &gConfigDict[1]);
       if (ConfName) {
         if (StrLen(ConfName) == 0) {
           gConfigDict[1] = NULL;
@@ -2137,11 +2187,11 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
         } else {
           SetOEMPath(ConfName);
           Status = LoadUserSettings(SelfRootDir, ConfName, &gConfigDict[1]);
-          DBG("%s\\%s.plist%s loaded with name from LoadOptions: %r\n",
+          DBG ("%s\\%s.plist%s loaded with name from LoadOptions: %r\n",
               OEMPath, ConfName, EFI_ERROR(Status) ? L" not" : L"", Status);
           if (EFI_ERROR(Status)) {
             gConfigDict[1] = NULL;
-            FreePool(ConfName);
+            FreePool (ConfName);
             ConfName = NULL;
           }
         }
@@ -2150,50 +2200,38 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
   }
   if (gConfigDict[1]) {
     UniteTag = GetProperty(gConfigDict[1], "Unite");
-    if(UniteTag) {
-      UniteConfigs =  (UniteTag->type == kTagTypeTrue) ||
-                      ((UniteTag->type == kTagTypeString) &&
-                      ((UniteTag->string[0] == 'y') || (UniteTag->string[0] == 'Y')));
-      DBG("UniteConfigs = %s", UniteConfigs ? L"TRUE\n": L"FALSE\n" );
+    if (UniteTag) {
+      UniteConfigs = (UniteTag->type == kTagTypeTrue)
+                     || ((UniteTag->type == kTagTypeString) && ((UniteTag->string[0] == 'y')
+                     || (UniteTag->string[0] == 'Y')));
+      DBG ("UniteConfigs = %s", UniteConfigs ? L"TRUE\n": L"FALSE\n" );
     }
   }
   if (!gConfigDict[1] || UniteConfigs) {
-    SetOEMPath(L"config");
-    Status = LoadUserSettings(SelfRootDir, L"config", &gConfigDict[0]);
-      DBG("%s\\config.plist%s loaded: %r\n", OEMPath, EFI_ERROR(Status) ? L" not" : L"", Status);
+    SetOEMPath (L"config");
+    Status = LoadUserSettings (SelfRootDir, L"config", &gConfigDict[0]);
+      DBG ("%s\\config.plist%s loaded: %r\n", OEMPath, EFI_ERROR(Status) ? L" not" : L"", Status);
   }
   UnicodeSPrint(gSettings.ConfigName, 64, L"%s%s%s",
-/*  gSettings.ConfigName = PoolPrint(L"%s%s%s", */
                                    gConfigDict[0] ? L"config": L"",
                                    (gConfigDict[0] && gConfigDict[1]) ? L" + ": L"",
                                    !gConfigDict[1] ? L"": (ConfName ? ConfName : L"Load Options"));
-  gSettings.MainConfigName = EfiStrDuplicate(gSettings.ConfigName);
-
+  
+  gSettings.MainConfigName = EfiStrDuplicate (gSettings.ConfigName);
   gSettings.PointerEnabled = TRUE;
   gSettings.PointerSpeed = 2;
   gSettings.DoubleClickTime = 500; //TODO - make it constant as nobody change it
 
 #ifdef ENABLE_SECURE_BOOT
-  InitializeSecureBoot();
+  InitializeSecureBoot ();
 #endif // ENABLE_SECURE_BOOT
 
-
   {
-//    UINT32                    machineSignature    = 0;
     EFI_ACPI_2_0_FIXED_ACPI_DESCRIPTION_TABLE     *FadtPointer = NULL;
     EFI_ACPI_4_0_FIRMWARE_ACPI_CONTROL_STRUCTURE  *Facs = NULL;
-
-//    DBG("---dump hibernations data---\n");
-    FadtPointer = GetFadt();
+    FadtPointer = GetFadt ();
     if (FadtPointer != NULL) {
       Facs = (EFI_ACPI_4_0_FIRMWARE_ACPI_CONTROL_STRUCTURE*)(UINTN)(FadtPointer->FirmwareCtrl);
-      /*
-      DBG("  Firmware wake address=%08lx\n", Facs->FirmwareWakingVector);
-      DBG("  Firmware wake 64 addr=%16llx\n",  Facs->XFirmwareWakingVector);
-      DBG("  Hardware signature   =%08lx\n", Facs->HardwareSignature);
-      DBG("  GlobalLock           =%08lx\n", Facs->GlobalLock);
-      DBG("  Flags                =%08lx\n", Facs->Flags);
-       */
       machineSignature = Facs->HardwareSignature;
     }
 #if HIBERNATE_DUMP_DATA
@@ -2216,16 +2254,13 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
   }
 #endif
   if (!GlobalConfig.FastBoot) {
-    GetListOfThemes();
-    GetListOfConfigs();
+    GetListOfThemes ();
+    GetListOfConfigs ();
   }
 
   for (i=0; i<2; i++) {
     if (gConfigDict[i]) {
- /*     Status = */GetEarlyUserSettings(SelfRootDir, gConfigDict[i]);
- //     if (EFI_ERROR(Status)) {
- //       DBG("Error in Early settings%d: %r\n", i, Status);
- //     }
+      GetEarlyUserSettings(SelfRootDir, gConfigDict[i]);
     }
   }
 
@@ -2238,15 +2273,8 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
 #endif // ENABLE_SECURE_BOOT
 
   MainMenu.TimeoutSeconds = GlobalConfig.Timeout >= 0 ? GlobalConfig.Timeout : 0;
-
-  //DBG("LoadDrivers() start\n");
+  
   LoadDrivers();
-  //DBG("LoadDrivers() end\n");
-
-/*  if (!gFirmwareClover &&
-      !gDriversFlags.EmuVariableLoaded) {
-    GetSmcKeys(FALSE);  // later we can get here SMC information
-  } */
   
   Status = gBS->LocateProtocol (&gEmuVariableControlProtocolGuid, NULL, (VOID**)&gEmuVariableControl);
   if (EFI_ERROR(Status)) {
@@ -2256,46 +2284,44 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
     gEmuVariableControl->InstallEmulation(gEmuVariableControl);
   }
 
-  DbgHeader("InitScreen");
+  DbgHeader ("InitScreen");
 	
   if (!GlobalConfig.FastBoot) {
     // init screen and dump video modes to log
     if (gDriversFlags.VideoLoaded) {
-      InitScreen(FALSE);
+      InitScreen (FALSE);
     } else {
-      InitScreen(!gFirmwareClover); // ? FALSE : TRUE);
+      InitScreen (!gFirmwareClover);
     }
     //DBG("DBG: setup screen\n");
-    SetupScreen();
+    SetupScreen ();
   } else {
-    InitScreen(FALSE);
+    InitScreen (FALSE);
   }
 	
   //  DBG("DBG: ReinitSelfLib\n");
   //Now we have to reinit handles
-  Status = ReinitSelfLib();
+  Status = ReinitSelfLib ();
   if (EFI_ERROR(Status)){
-    DebugLog(2, " %r", Status);
-    PauseForKey(L"Error reinit refit\n");
+    DebugLog (2, " %r", Status);
+    PauseForKey (L"Error reinit refit\n");
 #ifdef ENABLE_SECURE_BOOT
-    UninstallSecureBoot();
+    UninstallSecureBoot ();
 #endif // ENABLE_SECURE_BOOT
     return Status;
   }
-	
+  
   //  DBG("DBG: messages\n");
-  if (!GlobalConfig.NoEarlyProgress && !GlobalConfig.FastBoot  && GlobalConfig.Timeout>0) {
-    FirstMessage = PoolPrint(L"   Welcome to Clover %s   ", gFirmwareRevision);
+  if (!GlobalConfig.NoEarlyProgress && !GlobalConfig.FastBoot && GlobalConfig.Timeout>0) {
+    FirstMessage = PoolPrint (L"   Welcome to Clover %s   ", gFirmwareRevision);
     DrawTextXY(FirstMessage, (UGAWidth >> 1), UGAHeight >> 1, X_IS_CENTER);
     FreePool(FirstMessage);
-    FirstMessage = PoolPrint(L"... testing hardware ...");
-    DrawTextXY(FirstMessage, (UGAWidth >> 1), (UGAHeight >> 1) + 20, X_IS_CENTER);
-    FreePool(FirstMessage);
+    FirstMessage = PoolPrint (L"... testing hardware ...");
+    DrawTextXY (FirstMessage, (UGAWidth >> 1), (UGAHeight >> 1) + 20, X_IS_CENTER);
+    FreePool (FirstMessage);
   }
-
-//  DumpBiosMemoryMap();
-
-  GuiEventsInitialize();
+  
+  GuiEventsInitialize ();
 
   if (!gSettings.EnabledCores) {
     gSettings.EnabledCores = gCPUStructure.Cores;
@@ -2310,15 +2336,14 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
 //  GetDefaultSettings();
   GetAcpiTablesList();
 
-  DBG("Calibrated TSC Frequency = %ld = %ldMHz\n", gCPUStructure.TSCCalibr, DivU64x32(gCPUStructure.TSCCalibr, Mega));
+  DBG ("Calibrated TSC Frequency = %ld = %ldMHz\n", gCPUStructure.TSCCalibr, DivU64x32(gCPUStructure.TSCCalibr, Mega));
   if (gCPUStructure.TSCCalibr > 200000000ULL) {  //200MHz
     gCPUStructure.TSCFrequency = gCPUStructure.TSCCalibr;
   }
 
   gCPUStructure.CPUFrequency = gCPUStructure.TSCFrequency;
-  gCPUStructure.FSBFrequency = DivU64x32(MultU64x32(gCPUStructure.CPUFrequency, 10),
-                                         (gCPUStructure.MaxRatio == 0) ? 1 : gCPUStructure.MaxRatio);
-  gCPUStructure.MaxSpeed = (UINT32)DivU64x32(gCPUStructure.TSCFrequency + (Mega >> 1), Mega);
+  gCPUStructure.FSBFrequency = DivU64x32(MultU64x32(gCPUStructure.CPUFrequency, 10), (gCPUStructure.MaxRatio == 0) ? 1 : gCPUStructure.MaxRatio);
+  gCPUStructure.MaxSpeed     = (UINT32)DivU64x32(gCPUStructure.TSCFrequency + (Mega >> 1), Mega);
 
   switch (gCPUStructure.Model) {
     case CPU_MODEL_PENTIUM_M:
@@ -2326,7 +2351,6 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
     case CPU_MODEL_DOTHAN:// Pentium M, Dothan, 90nm
     case CPU_MODEL_YONAH:// Core Duo/Solo, Pentium M DC
     case CPU_MODEL_MEROM:// Core Xeon, Core 2 Duo, 65nm, Mobile
-    //case CPU_MODEL_CONROE:// Core Xeon, Core 2 Duo, 65nm, Desktop like Merom but not mobile
     case CPU_MODEL_CELERON:
     case CPU_MODEL_PENRYN:// Core 2 Duo/Extreme, Xeon, 45nm , Mobile
     case CPU_MODEL_NEHALEM:// Core i7 LGA1366, Xeon 5500, "Bloomfield", "Gainstown", 45nm
@@ -2350,9 +2374,8 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
   }
 
   if (!GlobalConfig.NoEarlyProgress && !GlobalConfig.FastBoot && GlobalConfig.Timeout>0) {
-    FirstMessage = PoolPrint(L"... user settings ...");
- //   i = (UGAWidth - StrLen(FirstMessage) * GlobalConfig.CharWidth) >> 1;
-    DrawTextXY(FirstMessage, (UGAWidth >> 1), (UGAHeight >> 1) + 20, X_IS_CENTER);
+    FirstMessage = PoolPrint (L"... user settings ...");
+    DrawTextXY (FirstMessage, (UGAWidth >> 1), (UGAHeight >> 1) + 20, X_IS_CENTER);
     FreePool(FirstMessage);
   }
 
@@ -2373,8 +2396,8 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
     if (!gSettings.UserChange) {
       gSettings.BusSpeed = 200000;
     }
-    gCPUStructure.MaxRatio = (UINT32)DivU64x32(gCPUStructure.TSCCalibr, gSettings.BusSpeed * kilo);
-    DBG("Set MaxRatio for QEMU: %d\n", gCPUStructure.MaxRatio);
+    gCPUStructure.MaxRatio = (UINT32) DivU64x32 (gCPUStructure.TSCCalibr, gSettings.BusSpeed * kilo);
+    DBG ("Set MaxRatio for QEMU: %d\n", gCPUStructure.MaxRatio);
     gCPUStructure.MaxRatio *= 10;
     gCPUStructure.MinRatio = 60;
 /*    AsmWriteMsr64(MSR_FLEX_RATIO, ((6ULL << 40) + //(1ULL << 16) +
@@ -2383,9 +2406,8 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
     Msrflex = AsmReadMsr64(MSR_FLEX_RATIO); //0 == not Rw :(
     DBG("MSR_FLEX_RATIO = %lx\n", Msrflex);
  */
-    gCPUStructure.FSBFrequency = DivU64x32(MultU64x32(gCPUStructure.CPUFrequency, 10),
-                                           (gCPUStructure.MaxRatio == 0) ? 1 : gCPUStructure.MaxRatio);
-    gCPUStructure.ExternalClock = (UINT32)DivU64x32(gCPUStructure.FSBFrequency + kilo - 1, kilo);
+    gCPUStructure.FSBFrequency = DivU64x32 (MultU64x32 (gCPUStructure.CPUFrequency, 10), (gCPUStructure.MaxRatio == 0) ? 1 : gCPUStructure.MaxRatio);
+    gCPUStructure.ExternalClock = (UINT32) DivU64x32 (gCPUStructure.FSBFrequency + kilo - 1, kilo);
   }
 
   dropDSM = 0xFFFF; //by default we drop all OEM _DSM. They have no sense for us.
@@ -2393,22 +2415,15 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
     dropDSM = gSettings.DropOEM_DSM;   //if set by user
   }
   // Load any extra SMBIOS information
-  if (!EFI_ERROR(LoadUserSettings(SelfRootDir, L"smbios", &smbiosTags)) && (smbiosTags != NULL)) {
-    TagPtr dictPointer = GetProperty(smbiosTags,"SMBIOS");
+  if (!EFI_ERROR(LoadUserSettings (SelfRootDir, L"smbios", &smbiosTags)) && (smbiosTags != NULL)) {
+    TagPtr dictPointer = GetProperty (smbiosTags,"SMBIOS");
     if (dictPointer) {
       ParseSMBIOSSettings(dictPointer);
     } else {
-      DBG("Invalid smbios.plist, not overriding config.plist!\n");
+      DBG ("Invalid smbios.plist, not overriding config.plist!\n");
     }
   }
-/*
-  if (gFirmwareClover || gDriversFlags.EmuVariableLoaded) {
-    if (GlobalConfig.StrictHibernate) {
-      DBG(" Don't use StrictHibernate with emulated NVRAM!\n");
-    }
-    GlobalConfig.StrictHibernate = FALSE;    
-  }
-*/
+  
   HaveDefaultVolume = gSettings.DefaultVolume != NULL;
   if (!gFirmwareClover &&
       !gDriversFlags.EmuVariableLoaded &&
@@ -2418,7 +2433,7 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
 // if present, ScanVolumes() will skip scanning other volumes
 // in the first run.
 // this speeds up loading of default macOS  volume.
-     GetEfiBootDeviceFromNvram();
+     GetEfiBootDeviceFromNvram ();
   }
 
   if (!GlobalConfig.NoEarlyProgress && !GlobalConfig.FastBoot && GlobalConfig.Timeout>0) {
@@ -2428,146 +2443,150 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
   }
 
 
-  GetListOfDsdts(); //only after GetUserSettings
-  GetListOfACPI(); //ssdt and other tables
+  GetListOfDsdts (); //only after GetUserSettings
+  GetListOfACPI (); //ssdt and other tables
 
   AfterTool = FALSE;
   gGuiIsReady = TRUE;
   do {
     MainMenu.EntryCount = 0;
     OptionMenu.EntryCount = 0;
-    InitKextList();
-    ScanVolumes();
+    InitKextList ();
+    ScanVolumes ();
 
     //Check apfs driver loaded state
     //Free APFSUUIDBank
     if (APFSUUIDBank != NULL) {
      //Free mem
-     FreePool(APFSUUIDBank);
+     FreePool (APFSUUIDBank);
      //Reset counter
-     APFSUUIDBankCounter=0;
+     APFSUUIDBankCounter = 0;
     }
     /* APFS container support */
     //Fill APFSUUIDBank
-    APFSUUIDBank = APFSContainer_Support();
+    APFSUUIDBank = APFSContainer_Support ();
     if (APFSUUIDBankCounter != 0) {
       APFSSupport = TRUE;
     } else {
       APFSSupport = FALSE;
     }
     //Fill systemversion plists path
-    SystemVersionInit();
+    SystemVersionInit ();
 
     // as soon as we have Volumes, find latest nvram.plist and copy it to RT vars
     if (!AfterTool) {
       if (gFirmwareClover || gDriversFlags.EmuVariableLoaded) {
-        PutNvramPlistToRtVars();
+        PutNvramPlistToRtVars ();
       }
     }
 
     if (!GlobalConfig.FastBoot) {
 
       CHAR16 *TmpArgs;
-      GetOutputs();
+      GetOutputs ();
       if (gThemeNeedInit) {
-        InitTheme(TRUE, &Now);
+        InitTheme (TRUE, &Now);
         gThemeNeedInit = FALSE;
       } else if (gThemeChanged) {
-        DBG("change theme\n");
-        InitTheme(FALSE, NULL);
-        FreeMenu(&OptionMenu);
+        DBG ("change theme\n");
+        InitTheme (FALSE, NULL);
+        FreeMenu (&OptionMenu);
       }
-      DBG("theme inited\n");
+      DBG ("theme inited\n");
       gThemeChanged = FALSE;
       if (GlobalConfig.Theme) {
-        DBG("Chosen theme %s\n", GlobalConfig.Theme);
+        DBG ("Chosen theme %s\n", GlobalConfig.Theme);
       } else {
-        DBG("Chosen embedded theme\n");
+        DBG ("Chosen embedded theme\n");
       }
 //      DBG("initial boot-args=%a\n", gSettings.BootArgs);
       //now it is a time to set RtVariables
-      SetVariablesFromNvram();
+      SetVariablesFromNvram ();
       
-      TmpArgs = PoolPrint(L"%a ", gSettings.BootArgs);
-      DBG("after NVRAM boot-args=%a\n", gSettings.BootArgs);
-      gSettings.OptionsBits = EncodeOptions(TmpArgs);
+      TmpArgs = PoolPrint (L"%a ", gSettings.BootArgs);
+      DBG ("after NVRAM boot-args=%a\n", gSettings.BootArgs);
+      gSettings.OptionsBits = EncodeOptions (TmpArgs);
 //      DBG("initial OptionsBits %x\n", gSettings.OptionsBits);
-      FreePool(TmpArgs);
-      FillInputs(TRUE);
+      FreePool (TmpArgs);
+      FillInputs (TRUE);
 
       // scan for loaders and tools, add then to the menu
       if (GlobalConfig.LegacyFirst){
-        AddCustomLegacy();
+        AddCustomLegacy ();
         if (!GlobalConfig.NoLegacy) {
-          ScanLegacy();
+          ScanLegacy ();
         }
       }
     }
-    GetSmcKeys(TRUE);
+    GetSmcKeys (TRUE);
     
     // Add custom entries
-    AddCustomEntries();
+    AddCustomEntries ();
     if (gSettings.DisableEntryScan) {
-      DBG("Entry scan disabled\n");
+      DBG ("Entry scan disabled\n");
     } else {
-      ScanLoader();
+      ScanLoader ();
     }
 
     if (!GlobalConfig.FastBoot) {
-
       if (!GlobalConfig.LegacyFirst) {
-        AddCustomLegacy();
+        AddCustomLegacy ();
         if (!GlobalConfig.NoLegacy) {
-          ScanLegacy();
+          ScanLegacy ();
         }
       }
 
       // fixed other menu entries
       if (!(GlobalConfig.DisableFlags & HIDEUI_FLAG_TOOLS)) {
-        AddCustomTool();
+        AddCustomTool ();
         if (!gSettings.DisableToolScan) {
-          ScanTool();
+          ScanTool ();
 #ifdef ENABLE_SECURE_BOOT
           // Check for secure boot setup mode
-          AddSecureBootTool();
+          AddSecureBootTool ();
 #endif // ENABLE_SECURE_BOOT
         }
       }
 
-      MenuEntryOptions.Image = BuiltinIcon(BUILTIN_ICON_FUNC_OPTIONS);
-      if (gSettings.DisableCloverHotkeys)
+      MenuEntryOptions.Image = BuiltinIcon (BUILTIN_ICON_FUNC_OPTIONS);
+      if (gSettings.DisableCloverHotkeys) {
         MenuEntryOptions.ShortcutLetter = 0x00;
-      AddMenuEntry(&MainMenu, &MenuEntryOptions);
-      MenuEntryAbout.Image = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-      if (gSettings.DisableCloverHotkeys)
+      }
+      AddMenuEntry (&MainMenu, &MenuEntryOptions);
+      
+      MenuEntryAbout.Image = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
+      if (gSettings.DisableCloverHotkeys) {
         MenuEntryAbout.ShortcutLetter = 0x00;
-      AddMenuEntry(&MainMenu, &MenuEntryAbout);
-
+      }
+      AddMenuEntry (&MainMenu, &MenuEntryAbout);
 
       if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_FUNCS) || MainMenu.EntryCount == 0) {
-        if (gSettings.DisableCloverHotkeys)
+        if (gSettings.DisableCloverHotkeys) {
           MenuEntryReset.ShortcutLetter = 0x00;
-        MenuEntryReset.Image = BuiltinIcon(BUILTIN_ICON_FUNC_RESET);
-        AddMenuEntry(&MainMenu, &MenuEntryReset);
-        if (gSettings.DisableCloverHotkeys)
+        }
+        MenuEntryReset.Image = BuiltinIcon (BUILTIN_ICON_FUNC_RESET);
+        AddMenuEntry (&MainMenu, &MenuEntryReset);
+        
+        if (gSettings.DisableCloverHotkeys) {
           MenuEntryShutdown.ShortcutLetter = 0x00;
-        MenuEntryShutdown.Image = BuiltinIcon(BUILTIN_ICON_FUNC_EXIT);
-        AddMenuEntry(&MainMenu, &MenuEntryShutdown);
+        }
+        MenuEntryShutdown.Image = BuiltinIcon (BUILTIN_ICON_FUNC_EXIT);
+        AddMenuEntry (&MainMenu, &MenuEntryShutdown);
       }
 // font already changed and this message very quirky, clear line here
-      if (!GlobalConfig.NoEarlyProgress && !GlobalConfig.FastBoot && GlobalConfig.Timeout>0) {
-        DrawTextXY(L"                          ", (UGAWidth >> 1), (UGAHeight >> 1) + 20, X_IS_CENTER);
+      if (!GlobalConfig.NoEarlyProgress && !GlobalConfig.FastBoot && GlobalConfig.Timeout > 0) {
+        DrawTextXY (L"                          ", (UGAWidth >> 1), (UGAHeight >> 1) + 20, X_IS_CENTER);
       }
     }
     // wait for user ACK when there were errors
-    FinishTextScreen(FALSE);
+    FinishTextScreen (FALSE);
 #if CHECK_SMC
-    DumpSmcKeys();
+    DumpSmcKeys ();
 #endif
 
-    DefaultIndex = FindDefaultEntry();
-    DBG("DefaultIndex=%d and MainMenu.EntryCount=%d\n", DefaultIndex, MainMenu.EntryCount);
-    if ((DefaultIndex >= 0) && (DefaultIndex < (INTN)MainMenu.EntryCount)) {
+    DefaultIndex = FindDefaultEntry ();
+    DBG ("DefaultIndex=%d and MainMenu.EntryCount=%d\n", DefaultIndex, MainMenu.EntryCount);
+    if ((DefaultIndex >= 0) && (DefaultIndex < (INTN) MainMenu.EntryCount)) {
       DefaultEntry = MainMenu.Entries[DefaultIndex];
     } else {
       DefaultEntry = NULL;
@@ -2576,49 +2595,48 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
     MainLoopRunning = TRUE;
     //    MainMenu.TimeoutSeconds = GlobalConfig.Timeout >= 0 ? GlobalConfig.Timeout : 0;
     if (DefaultEntry && (GlobalConfig.FastBoot ||
-                         (gSettings.SkipHibernateTimeout &&
-                          OSFLAG_ISSET(((LOADER_ENTRY *)DefaultEntry)->Flags, OSFLAG_HIBERNATED)))) {
+          (gSettings.SkipHibernateTimeout && OSFLAG_ISSET(((LOADER_ENTRY *)DefaultEntry)->Flags, OSFLAG_HIBERNATED)))) {
       if (DefaultEntry->Tag == TAG_LOADER) {
         StartLoader((LOADER_ENTRY *)DefaultEntry);
-      } else if (DefaultEntry->Tag == TAG_LEGACY){
-        StartLegacy((LEGACY_ENTRY *)DefaultEntry);
+      } else if (DefaultEntry->Tag == TAG_LEGACY) {
+        StartLegacy ((LEGACY_ENTRY *) DefaultEntry);
       }
       GlobalConfig.FastBoot = FALSE; //Hmm... will never be here
     }
-    MainAnime = GetAnime(&MainMenu);
+    MainAnime = GetAnime (&MainMenu);
 //    DBG("MainAnime=%d\n", MainAnime);
     AfterTool = FALSE;
     gEvent = 0; //clear to cancel loop
     while (MainLoopRunning) {
       CHAR8 *LastChosenOS = NULL;
-      if (GlobalConfig.Timeout == 0 && DefaultEntry != NULL && !ReadAllKeyStrokes()) {
+      if (GlobalConfig.Timeout == 0 && DefaultEntry != NULL && !ReadAllKeyStrokes ()) {
         // go strait to DefaultVolume loading
         MenuExit = MENU_EXIT_TIMEOUT;
       } else {
         MainMenu.AnimeRun = MainAnime;
-        MenuExit = RunMainMenu(&MainMenu, DefaultIndex, &ChosenEntry);
+        MenuExit = RunMainMenu (&MainMenu, DefaultIndex, &ChosenEntry);
       }
-      DBG("exit from MainMenu %d\n", MenuExit); //MENU_EXIT_ENTER=(1) MENU_EXIT_DETAILS=3
+      DBG ("exit from MainMenu %d\n", MenuExit); //MENU_EXIT_ENTER=(1) MENU_EXIT_DETAILS=3
       // disable default boot - have sense only in the first run
       GlobalConfig.Timeout = -1;
       //remember OS before go to second row
       if (ChosenEntry->Row == 0) {
-        LastChosenOS = ((LOADER_ENTRY *)ChosenEntry)->OSVersion;
+        LastChosenOS = ((LOADER_ENTRY *) ChosenEntry)->OSVersion;
       }
 
       if ((DefaultEntry != NULL) && (MenuExit == MENU_EXIT_TIMEOUT)) {
         if (DefaultEntry->Tag == TAG_LOADER) {
-          StartLoader((LOADER_ENTRY *)DefaultEntry);
-        } else if (DefaultEntry->Tag == TAG_LEGACY){
-          StartLegacy((LEGACY_ENTRY *)DefaultEntry);
+          StartLoader ((LOADER_ENTRY *) DefaultEntry);
+        } else if (DefaultEntry->Tag == TAG_LEGACY) {
+          StartLegacy ((LEGACY_ENTRY *)DefaultEntry);
         }
         // if something goes wrong - break main loop to reinit volumes
         break;
       }
 
-      if (MenuExit == MENU_EXIT_OPTIONS){
+      if (MenuExit == MENU_EXIT_OPTIONS) {
         gBootChanged = FALSE;
-        OptionsMenu(&OptionEntry, LastChosenOS);
+        OptionsMenu (&OptionEntry, LastChosenOS);
         if (gBootChanged) {
           AfterTool = TRUE;
           MainLoopRunning = FALSE;
@@ -2627,16 +2645,14 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
         continue;
       }
 
-      if (MenuExit == MENU_EXIT_HELP){
-        HelpRefit();
+      if (MenuExit == MENU_EXIT_HELP) {
+        HelpRefit ();
         continue;
       }
-
       // EjectVolume
-      if (MenuExit == MENU_EXIT_EJECT){
-        if ((ChosenEntry->Tag == TAG_LOADER) ||
-            (ChosenEntry->Tag == TAG_LEGACY)) {
-          Status = EjectVolume(((LOADER_ENTRY *)ChosenEntry)->Volume);
+      if (MenuExit == MENU_EXIT_EJECT) {
+        if ((ChosenEntry->Tag == TAG_LOADER) || (ChosenEntry->Tag == TAG_LEGACY)) {
+          Status = EjectVolume (((LOADER_ENTRY *) ChosenEntry)->Volume);
           if (!EFI_ERROR(Status)) {
             break; //main loop is broken so Reinit all
           }
@@ -2652,7 +2668,7 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
       }
 
       // We don't allow exiting the main menu with the Escape key.
-      if (MenuExit == MENU_EXIT_ESCAPE){
+      if (MenuExit == MENU_EXIT_ESCAPE) {
         break;   //refresh main menu
         //           continue;
       }
@@ -2678,18 +2694,18 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
 //          }
           }
           // Attempt warm reboot
-          gRS->ResetSystem(EfiResetWarm, EFI_SUCCESS, 0, NULL);
+          gRS->ResetSystem (EfiResetWarm, EFI_SUCCESS, 0, NULL);
           // Warm reboot may not be supported attempt cold reboot
-          gRS->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
+          gRS->ResetSystem (EfiResetCold, EFI_SUCCESS, 0, NULL);
           // Terminate the screen and just exit
-          TerminateScreen();
+          TerminateScreen ();
           MainLoopRunning = FALSE;
           ReinitDesktop = FALSE;
           AfterTool = TRUE;
           break;
 
         case TAG_SHUTDOWN: // It is not Shut Down, it is Exit from Clover
-          TerminateScreen();
+          TerminateScreen ();
           //         gRS->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
           MainLoopRunning = FALSE;   // just in case we get this far
           ReinitDesktop = FALSE;
@@ -2699,25 +2715,23 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
         case TAG_OPTIONS:    // Options like KernelFlags, DSDTname etc.
           gBootChanged = FALSE;
           OptionsMenu(&OptionEntry, LastChosenOS);
-          if (gBootChanged)
+          if (gBootChanged) {
             AfterTool = TRUE;
-          if (gBootChanged || gThemeChanged) // If theme has changed reinit the desktop
+          }
+          if (gBootChanged || gThemeChanged) { // If theme has changed reinit the desktop
             MainLoopRunning = FALSE;
+          }
           break;
 
         case TAG_ABOUT:    // About rEFIt
-          AboutRefit();
+          AboutRefit ();
           break;
-/* -- not passed here
-        case TAG_HELP:
-          HelpRefit();
-          break;
-*/
+
         case TAG_LOADER:   // Boot OS via .EFI loader
-          SetBootCurrent(ChosenEntry);
-          StartLoader((LOADER_ENTRY *)ChosenEntry);
+          SetBootCurrent (ChosenEntry);
+          StartLoader ((LOADER_ENTRY *) ChosenEntry);
           //if boot.efi failed we should somehow exit from the loop
-          TerminateScreen();
+          TerminateScreen ();
           MainLoopRunning = FALSE;
           ReinitDesktop = FALSE;
           AfterTool = TRUE;
@@ -2725,23 +2739,23 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
 
         case TAG_LEGACY:   // Boot legacy OS
           if (StrCmp(gST->FirmwareVendor, L"Phoenix Technologies Ltd.") == 0 &&
-              gST->Hdr.Revision >> 16 == 2 && (gST->Hdr.Revision & ((1 << 16) - 1)) == 0){
+              gST->Hdr.Revision >> 16 == 2 && (gST->Hdr.Revision & ((1 << 16) - 1)) == 0) {
             // Phoenix SecureCore Tiano 2.0 can't properly initiate LegacyBios protocol when called externally
             // which results in "Operating System not found" message coming from BIOS
             // in this case just quit Clover to enter BIOS again
-            TerminateScreen();
+            TerminateScreen ();
             MainLoopRunning = FALSE;
             ReinitDesktop = FALSE;
             AfterTool = TRUE;
           } else {
-            SetBootCurrent(ChosenEntry);
-            StartLegacy((LEGACY_ENTRY *)ChosenEntry);
+            SetBootCurrent (ChosenEntry);
+            StartLegacy ((LEGACY_ENTRY *) ChosenEntry);
           }
           break;
 
         case TAG_TOOL:     // Start a EFI tool
-          StartTool((LOADER_ENTRY *)ChosenEntry);
-          TerminateScreen(); //does not happen
+          StartTool ((LOADER_ENTRY *) ChosenEntry);
+          TerminateScreen (); //does not happen
           //   return EFI_SUCCESS;
           //  BdsLibConnectAllDriversToAllControllers();
           //    PauseForKey(L"Returned from StartTool\n");
@@ -2751,13 +2765,13 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
 
 #ifdef ENABLE_SECURE_BOOT
         case TAG_SECURE_BOOT: // Try to enable secure boot
-          EnableSecureBoot();
+          EnableSecureBoot ();
           MainLoopRunning = FALSE;
           AfterTool = TRUE;
           break;
 
         case TAG_SECURE_BOOT_CONFIG: // Configure secure boot
-          MainLoopRunning = !ConfigureSecureBoot();
+          MainLoopRunning = !ConfigureSecureBoot ();
           AfterTool = TRUE;
           break;
 #endif // ENABLE_SECURE_BOOT
@@ -2782,22 +2796,22 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
               UINTN OptionalDataSize;
               UINTN BootNum;
 
-              PrintBootOptions(FALSE);
+              PrintBootOptions (FALSE);
 
               for (EntryIndex = 0; EntryIndex < (INTN)MainMenu.EntryCount; EntryIndex++) {
                 if (MainMenu.Entries[EntryIndex]->Row != 0) {
                   continue;
                 }
 
-                Entry = (LOADER_ENTRY *)MainMenu.Entries[EntryIndex];
+                Entry = (LOADER_ENTRY *) MainMenu.Entries[EntryIndex];
                 VolName = Entry->Volume->VolName;
                 if (VolName == NULL) {
                   VolName = L"";
                 }
-                NameSize = StrSize(VolName); //can't use StrSize with NULL! Stupid UEFI!!!
+                NameSize = StrSize (VolName); //can't use StrSize with NULL! Stupid UEFI!!!
                 Name2Size = 0;
                 if (Entry->LoaderPath != NULL) {
-                  LoaderName = Basename(Entry->LoaderPath);
+                  LoaderName = Basename (Entry->LoaderPath);
                 } else {
                   LoaderName = NULL;  //legacy boot
                 }
@@ -2805,17 +2819,17 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
                   Name2Size = StrSize(LoaderName);
                 }
 
-                Description = PoolPrint(L"Clover start %s at %s", (LoaderName != NULL)?LoaderName:L"legacy", VolName);
+                Description = PoolPrint (L"Clover start %s at %s", (LoaderName != NULL)?LoaderName:L"legacy", VolName);
                 OptionalDataSize = NameSize + Name2Size + 4 + 2; //signature + VolNameSize
-                OptionalData = AllocateZeroPool(OptionalDataSize);
+                OptionalData = AllocateZeroPool (OptionalDataSize);
                 if (OptionalData == NULL) {
                   break;
                 }
-                CopyMem(OptionalData, "Clvr", 4); //signature = 0x72766c43
-                CopyMem(OptionalData + 4, &NameSize, 2);
-                CopyMem(OptionalData + 6, VolName, NameSize);
+                CopyMem (OptionalData, "Clvr", 4); //signature = 0x72766c43
+                CopyMem (OptionalData + 4, &NameSize, 2);
+                CopyMem (OptionalData + 6, VolName, NameSize);
                 if (Name2Size != 0) {
-                  CopyMem(OptionalData + 6 + NameSize, LoaderName, Name2Size);
+                  CopyMem (OptionalData + 6 + NameSize, LoaderName, Name2Size);
                 }
 
                 Status = AddBootOptionForFile (
@@ -2829,23 +2843,22 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
                                       (UINT16*)&BootNum
                                       );
                 if (!EFI_ERROR(Status)) {
-                  DBG("Entry %d assigned option %04x\n", EntryIndex, BootNum);
+                  DBG ("Entry %d assigned option %04x\n", EntryIndex, BootNum);
                   Entry->BootNum = BootNum;
                 }
                 FreePool(OptionalData);
                 FreePool(Description);
               } //for (EntryIndex
 
-
               PrintBootOptions(FALSE);
-            } else if (StrStr(LoaderEntry->LoadOptions, L"BO-REMOVE") != NULL) {
-              PrintBootOptions(FALSE);
+            } else if (StrStr (LoaderEntry->LoadOptions, L"BO-REMOVE") != NULL) {
+              PrintBootOptions (FALSE);
               Status = DeleteBootOptionForFile (LoaderEntry->Volume->DeviceHandle,
                                                 LoaderEntry->LoaderPath
                                                 );
               PrintBootOptions(FALSE);
-            } else if (StrStr(LoaderEntry->LoadOptions, L"BO-PRINT") != NULL) {
-              PrintBootOptions(TRUE);
+            } else if (StrStr (LoaderEntry->LoadOptions, L"BO-PRINT") != NULL) {
+              PrintBootOptions (TRUE);
             }
 
           }
@@ -2855,23 +2868,23 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
 
       } //switch
     } //MainLoopRunning
-    UninitRefitLib();
+    UninitRefitLib ();
     if (!AfterTool) {
       //   PauseForKey(L"After uninit");
       //reconnectAll
       if (!gFirmwareClover) {
-        BdsLibConnectAllEfi();
+        BdsLibConnectAllEfi ();
       }
       else {
-        DBG("ConnectAll after refresh menu\n");
-        BdsLibConnectAllDriversToAllControllers();
+        DBG ("ConnectAll after refresh menu\n");
+        BdsLibConnectAllDriversToAllControllers ();
       }
       //  ReinitRefitLib();
       //    PauseForKey(L"After ReinitRefitLib");
     }
     if (ReinitDesktop) {
-      DBG("ReinitSelfLib after theme change\n");
-      ReinitSelfLib();
+      DBG ("ReinitSelfLib after theme change\n");
+      ReinitSelfLib ();
     }
     //    PauseForKey(L"After ReinitSelfLib");
   } while (ReinitDesktop);
@@ -2883,7 +2896,7 @@ RefitMain (IN EFI_HANDLE           ImageHandle,
   //   EndlessIdleLoop();
 
 #ifdef ENABLE_SECURE_BOOT
-  UninstallSecureBoot();
+  UninstallSecureBoot ();
 #endif // ENABLE_SECURE_BOOT
 
   // Unload EmuVariable before returning to EFI GUI, as it should not be present when booting other Operating Systems.

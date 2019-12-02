@@ -76,7 +76,9 @@ EFI_CONSOLE_CONTROL_PROTOCOL gConsoleController =
 };
 
 EFI_STATUS
-InitializeConsoleSim ()
+InitializeConsoleSim (
+  VOID
+  )
 {
   EFI_STATUS Status;
   
@@ -86,6 +88,5 @@ InitializeConsoleSim ()
                   &gConsoleController,
                   NULL
                   );
-
   return Status;
 }

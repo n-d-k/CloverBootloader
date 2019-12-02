@@ -19,8 +19,8 @@
   BASE_NAME                     = CLOVER
   FILE_GUID                     = 8F7D7B1E-0E1C-4C98-B12E-4EC99C4081AC
   MODULE_TYPE                   = UEFI_APPLICATION
-  EDK_RELEASE_VERSION			= 0x00020000
-  EFI_SPECIFICATION_VERSION		= 0x00010000
+  EDK_RELEASE_VERSION	          = 0x00020000
+  EFI_SPECIFICATION_VERSION		  = 0x00010000
   VERSION_STRING                = 1.0
   ENTRY_POINT                   = RefitMain
 
@@ -31,9 +31,6 @@
 #
 
 [Sources]
-#  EfiLib/GenericBdsLib.h
-#  EfiLib/BmLib.c
-#  Platform/DevicePath.c #included into GenericBdsLib
   Platform/BdsConnect.c #included into GenericBdsLib
   refit/main.c
   refit/icns.c
@@ -67,7 +64,6 @@
   libeg/scroll_images.c
   libeg/BmLib.c
   libeg/image.c
-#  libeg/load_bmp.c
   libeg/load_icns.c
   libeg/libscreen.c
   libeg/lodepng.c
@@ -87,15 +83,12 @@
 	Platform/AmlGenerator.h
 	Platform/ati.c
 	Platform/ati.h
-#	Platform/BiosVideo.h
-#	Platform/Bmp.h
 	Platform/boot.h
 	Platform/BootLog.c
 	Platform/BootOptions.c
 	Platform/Console.c
 	Platform/cpu.c
 	Platform/DataHubCpu.c
-#	Platform/DataHubRecords.h
 	Platform/device_inject.c
 	Platform/device_inject.h
 	Platform/device_tree.c
@@ -104,8 +97,8 @@
 	Platform/Events.c
 	Platform/hda.c
 	Platform/hda.h
-    Platform/HdaCodecDump.c
-    Platform/HdaCodecDump.h
+  Platform/HdaCodecDump.c
+  Platform/HdaCodecDump.h
 	Platform/gma.c
 	Platform/gma.h
 	Platform/guid.c
@@ -116,28 +109,20 @@
 	Platform/memvendors.h
 	Platform/nvidia.c
 	Platform/nvidia.h
-#	Platform/pci.c
-#	Platform/picopng.c
-#	Platform/picopng.h
 	Platform/Platform.h
 	Platform/platformdata.c
 	Platform/plist.c
 	Platform/Pointer.c
 	Platform/Settings.c
 	Platform/smbios.c
-#	Platform/SmBios.h
 	Platform/spd.c
 	Platform/spd.h
 	Platform/string.c
 	Platform/string.h
 	Platform/StateGenerator.c
 	Platform/StateGenerator.h
-#	Platform/stringTable.c
 	Platform/usbfix.c
-#	Platform/UsbMass.h
-#	Platform/UsbMassBoot.h
-#	Platform/UsbMassImpl.h
-	Platform/NullTextOutput.h
+  Platform/NullTextOutput.h
   Platform/NullTextOutput.c
 	Platform/b64cdecode.h
 	Platform/b64cdecode.c
@@ -185,10 +170,7 @@
   HdaDevicesLib
   HobLib
   IoLib
-#  HiiLib
-#  EfiFileLib
   PeCoffLib
-#  GenericBdsLib
   MemLogLib
   VideoBiosPatchLib
   OpensslLib
@@ -214,8 +196,8 @@
   gEfiEventReadyToBootGuid
   gEfiEventVirtualAddressChangeGuid
   gEfiEventExitBootServicesGuid
-  gEfiFileInfoGuid                              ## CONSUMES ## GUID
-  gEfiFileSystemInfoGuid                        ## CONSUMES ## GUID
+  gEfiFileInfoGuid                             ## CONSUMES ## GUID
+  gEfiFileSystemInfoGuid                       ## CONSUMES ## GUID
   gEfiFileSystemVolumeLabelInfoIdGuid
   gEfiGlobalVariableGuid
   gEfiPartTypeLegacyMbrGuid
@@ -235,18 +217,15 @@
   gAppleOsLoadedNamedEventGuid
   gBootChimeVendorVariableGuid
 
-
-[Ppis]
-
 [Protocols]
-  gEfiComponentName2ProtocolGuid                          # ALWAYS_CONSUMED
-  gEfiDevicePathToTextProtocolGuid                        # ALWAYS_CONSUMED
-  gEfiSimpleFileSystemProtocolGuid                        # ALWAYS_CONSUMED
-  gEfiSimpleTextInProtocolGuid                            # ALWAYS_CONSUMED
-  gEfiSimpleTextInputExProtocolGuid                       # ALWAYS_CONSUMED
-  gEfiSimpleTextOutProtocolGuid                           # ALWAYS_CONSUMED
-  gEfiUnicodeCollationProtocolGuid                       # ALWAYS_CONSUMED
-  gEfiUnicodeCollation2ProtocolGuid                       # ALWAYS_CONSUMED
+  gEfiComponentName2ProtocolGuid                # ALWAYS_CONSUMED
+  gEfiDevicePathToTextProtocolGuid              # ALWAYS_CONSUMED
+  gEfiSimpleFileSystemProtocolGuid              # ALWAYS_CONSUMED
+  gEfiSimpleTextInProtocolGuid                  # ALWAYS_CONSUMED
+  gEfiSimpleTextInputExProtocolGuid             # ALWAYS_CONSUMED
+  gEfiSimpleTextOutProtocolGuid                 # ALWAYS_CONSUMED
+  gEfiUnicodeCollationProtocolGuid              # ALWAYS_CONSUMED
+  gEfiUnicodeCollation2ProtocolGuid             # ALWAYS_CONSUMED
 
   gEfiAcpiS3SaveProtocolGuid                    # PROTOCOL CONSUMES
   gEfiBlockIoProtocolGuid                       # PROTOCOL CONSUMES
@@ -258,14 +237,14 @@
   gEfiFirmwareVolume2ProtocolGuid               # PROTOCOL CONSUMES
   gEfiGraphicsOutputProtocolGuid                # PROTOCOL SOMETIMES_CONSUMES
   gEfiHiiFontProtocolGuid                       # PROTOCOL CONSUMES
-  gEfiLegacy8259ProtocolGuid					## PROTOCOL SOMETIMES_CONSUMES
+  gEfiLegacy8259ProtocolGuid					          ## PROTOCOL SOMETIMES_CONSUMES
   gEfiLoadedImageProtocolGuid                   # PROTOCOL CONSUMES
   gEfiOEMBadgingProtocolGuid                    # PROTOCOL CONSUMES
   gEfiPciIoProtocolGuid                         # PROTOCOL CONSUMES
   gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
   gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
   gEfiSimpleNetworkProtocolGuid                 # PROTOCOL CONSUMES
-  gEfiStatusCodeRuntimeProtocolGuid				# PROTOCOL CONSUMES
+  gEfiStatusCodeRuntimeProtocolGuid				      # PROTOCOL CONSUMES
   gEfiUgaDrawProtocolGuid |PcdUgaConsumeSupport # PROTOCOL SOMETIMES_CONSUMES
   gEfiManagedNetworkServiceBindingProtocolGuid
 
@@ -301,11 +280,8 @@
 
 [FeaturePcd]
   gEfiMdePkgTokenSpaceGuid.PcdUgaConsumeSupport
-
-[Pcd]
-
+  
 [BuildOptions]
-#  XCODE:*_*_*_CC_FLAGS = -fsigned-char -O2 -fno-common
   XCODE:*_*_*_CC_FLAGS = -fsigned-char -O2 -fno-omit-frame-pointer
-  GCC:*_*_*_CC_FLAGS = -std=c99 -Os -fno-omit-frame-pointer -maccumulate-outgoing-args
-  MSFT:*_*_*_CC_FLAGS = /Os /wd4201
+  GCC:*_*_*_CC_FLAGS   = -std=c99 -Os -fno-omit-frame-pointer -maccumulate-outgoing-args
+  MSFT:*_*_*_CC_FLAGS  = /Os /wd4201

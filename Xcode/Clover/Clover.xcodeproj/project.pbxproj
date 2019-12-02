@@ -21,6 +21,8 @@
 		12E3015A1D5A413A00EED426 /* lodepng.c in Sources */ = {isa = PBXBuildFile; fileRef = 12E301581D5A413A00EED426 /* lodepng.c */; };
 		2C794E3F1A0AA85900D845B0 /* FSInject.c in Sources */ = {isa = PBXBuildFile; fileRef = 2C794CEA1A0AA85900D845B0 /* FSInject.c */; };
 		2C794E401A0AA85900D845B0 /* Test.c in Sources */ = {isa = PBXBuildFile; fileRef = 2C794CF11A0AA85900D845B0 /* Test.c */; };
+		4C1F68E823917797009C8E69 /* NullTextOutput.c in Sources */ = {isa = PBXBuildFile; fileRef = 4C1F68E723917796009C8E69 /* NullTextOutput.c */; };
+		4C1F68EC239177E5009C8E69 /* HdaCodecDump.c in Sources */ = {isa = PBXBuildFile; fileRef = 4C1F68EA239177E4009C8E69 /* HdaCodecDump.c */; };
 		A5582AFD21019EA6002CFB6E /* VectorGraphics.c in Sources */ = {isa = PBXBuildFile; fileRef = A5582AFC21019EA6002CFB6E /* VectorGraphics.c */; };
 		A5603D0421F04ECE005F400E /* sound.c in Sources */ = {isa = PBXBuildFile; fileRef = A5603D0321F04ECE005F400E /* sound.c */; };
 		A5611B3421DCBA53008FDB96 /* StartupSound.c in Sources */ = {isa = PBXBuildFile; fileRef = A5611B3321DCBA53008FDB96 /* StartupSound.c */; };
@@ -2278,6 +2280,10 @@
 		2C794CEE1A0AA85900D845B0 /* FSInjectProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FSInjectProtocol.h; sourceTree = "<group>"; };
 		2C794CF11A0AA85900D845B0 /* Test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Test.c; sourceTree = "<group>"; };
 		2C794CF21A0AA85900D845B0 /* Test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Test.h; sourceTree = "<group>"; };
+		4C1F68E723917796009C8E69 /* NullTextOutput.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = NullTextOutput.c; sourceTree = "<group>"; };
+		4C1F68E9239177D0009C8E69 /* NullTextOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NullTextOutput.h; sourceTree = "<group>"; };
+		4C1F68EA239177E4009C8E69 /* HdaCodecDump.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HdaCodecDump.c; sourceTree = "<group>"; };
+		4C1F68EB239177E4009C8E69 /* HdaCodecDump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HdaCodecDump.h; sourceTree = "<group>"; };
 		A51C783321E00504001385A7 /* WaveLib.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = WaveLib.c; sourceTree = "<group>"; };
 		A51C783421E00504001385A7 /* WaveLib.inf */ = {isa = PBXFileReference; lastKnownFileType = text; path = WaveLib.inf; sourceTree = "<group>"; };
 		A51C783621E0981C001385A7 /* AudioDxe.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = AudioDxe.c; sourceTree = "<group>"; };
@@ -6006,8 +6012,12 @@
 		126151561A15BBB000903E7B /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				4C1F68EA239177E4009C8E69 /* HdaCodecDump.c */,
+				4C1F68EB239177E4009C8E69 /* HdaCodecDump.h */,
+				4C1F68E9239177D0009C8E69 /* NullTextOutput.h */,
 				126151571A15BBB000903E7B /* AcpiPatcher.c */,
 				126151581A15BBB000903E7B /* AmlGenerator.c */,
+				4C1F68E723917796009C8E69 /* NullTextOutput.c */,
 				126151591A15BBB000903E7B /* AmlGenerator.h */,
 				1261515A1A15BBB000903E7B /* ati.c */,
 				1261515B1A15BBB000903E7B /* ati.h */,
@@ -15791,6 +15801,7 @@
 				A5AA06BD237F13C2009CD413 /* CompareMem.nasm in Sources */,
 				A5AAFD14237F13B4009CD413 /* SmmMemoryProfileLib.c in Sources */,
 				A5AAFCFA237F13B4009CD413 /* DeviceManager.c in Sources */,
+				4C1F68EC239177E5009C8E69 /* HdaCodecDump.c in Sources */,
 				12B8EBBE1DDCE91200AC0A2C /* egemb_font.c in Sources */,
 				A5AAFD10237F13B4009CD413 /* SmmLockBoxPeiLib.c in Sources */,
 				A5AA061E237F13C2009CD413 /* ScanMem64Wrapper.c in Sources */,
@@ -16927,6 +16938,7 @@
 				A5AA0498237F13C1009CD413 /* WriteGdtr.nasm in Sources */,
 				A5AAFB93237F13B3009CD413 /* EbcLowLevel.nasm in Sources */,
 				A5AAFD12237F13B4009CD413 /* DxePerformanceLib.c in Sources */,
+				4C1F68E823917797009C8E69 /* NullTextOutput.c in Sources */,
 				A5AAFC89237F13B4009CD413 /* Xhci.c in Sources */,
 				A5AA071B237F13C2009CD413 /* ScanMem8.nasm in Sources */,
 				A5AAFD35237F13B4009CD413 /* Data.c in Sources */,

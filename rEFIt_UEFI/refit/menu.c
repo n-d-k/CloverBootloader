@@ -34,15 +34,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//#include "Platform.h"
-#include "libegint.h"   //this includes platform.h
-//#include "../include/scroll_images.h"
-#include "Version.h"
-//#include "colors.h"
-
-#include "nanosvg.h"
-#include "FloatLib.h"
-#include "HdaCodecDump.h"
+#include <libegint.h>
+#include <Version.h>
+#include <nanosvg.h>
+#include <FloatLib.h>
+#include <HdaCodecDump.h>
 
 
 #ifndef DEBUG_ALL
@@ -1347,7 +1343,10 @@ VOID AddMenuInfo(REFIT_MENU_SCREEN *SubScreen, CHAR16 *Line)
   AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY*)InputBootArgs);
 }
 
-VOID AboutRefit(VOID)
+VOID
+AboutRefit (
+  VOID
+)
 {
   //  CHAR8* Revision = NULL;
   if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_MENU_TITLE_IMAGE)) {
@@ -1401,7 +1400,10 @@ VOID AboutRefit(VOID)
   RunMenu(&AboutMenu, NULL);
 }
 
-VOID HelpRefit(VOID)
+VOID
+HelpRefit (
+  VOID
+)
 {
   if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_MENU_TITLE_IMAGE)) {
     HelpMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_HELP);
@@ -2420,12 +2422,17 @@ static UINTN InputDialog(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC  Style
 }
 
 
-UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC StyleFunc, IN OUT INTN *DefaultEntryIndex, OUT REFIT_MENU_ENTRY **ChosenEntry)
+UINTN
+RunGenericMenu (
+  IN REFIT_MENU_SCREEN      *Screen,
+  IN MENU_STYLE_FUNC        StyleFunc,
+  IN OUT INTN               *DefaultEntryIndex,
+  OUT REFIT_MENU_ENTRY      **ChosenEntry
+  )
 {
   SCROLL_STATE  State;
   EFI_STATUS    Status;
   EFI_INPUT_KEY key;
-  //    UINTN         Index;
   INTN          ShortcutEntry;
   BOOLEAN       HaveTimeout = FALSE;
   INTN          TimeoutCountdown = 0;
@@ -2684,13 +2691,13 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen, IN MENU_STYLE_FUNC StyleFunc,
         }
         break;
       case SCAN_F8:
-        testSVG();
-        SaveHdaDumpBin();
-        SaveHdaDumpTxt();
+        testSVG ();
+        SaveHdaDumpBin ();
+        SaveHdaDumpTxt ();
         break;
 
       case SCAN_F9:
-        SetNextScreenMode(1);
+        SetNextScreenMode (1);
         InitTheme(FALSE, NULL);
         break;
       case SCAN_F10:

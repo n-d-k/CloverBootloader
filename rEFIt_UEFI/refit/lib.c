@@ -182,73 +182,80 @@ EFI_STATUS GetRootFromPath(IN EFI_DEVICE_PATH_PROTOCOL* DevicePath, OUT EFI_FILE
 // self recognition stuff
 //
 
-EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle)
+EFI_STATUS
+InitRefitLib (
+  IN EFI_HANDLE             ImageHandle
+  )
 {
   EFI_STATUS  Status;
-  CHAR16      *FilePathAsString;
-  UINTN       i;
+  CHAR16                    *FilePathAsString;
+  UINTN                     i;
   UINTN                     DevicePathSize;
-  EFI_DEVICE_PATH_PROTOCOL* TmpDevicePath;
+  EFI_DEVICE_PATH_PROTOCOL  *TmpDevicePath;
   
   SelfImageHandle = ImageHandle;
-  Status = gBS->HandleProtocol(SelfImageHandle, &gEfiLoadedImageProtocolGuid, (VOID **) &SelfLoadedImage);
-  if (CheckFatalError(Status, L"while getting a LoadedImageProtocol handle"))
+  Status = gBS->HandleProtocol (SelfImageHandle, &gEfiLoadedImageProtocolGuid, (VOID **) &SelfLoadedImage);
+  if (CheckFatalError (Status, L"while getting a LoadedImageProtocol handle")) {
     return Status;
-  
+  }
   SelfDeviceHandle = SelfLoadedImage->DeviceHandle;
-  TmpDevicePath = DevicePathFromHandle (SelfDeviceHandle);
-  DevicePathSize = GetDevicePathSize (TmpDevicePath);
-  SelfDevicePath = AllocateAlignedPages(EFI_SIZE_TO_PAGES(DevicePathSize), 64);
-  CopyMem(SelfDevicePath, TmpDevicePath, DevicePathSize);
+  TmpDevicePath    = DevicePathFromHandle (SelfDeviceHandle);
+  DevicePathSize   = GetDevicePathSize (TmpDevicePath);
+  SelfDevicePath   = AllocateAlignedPages(EFI_SIZE_TO_PAGES(DevicePathSize), 64);
+  
+  CopyMem (SelfDevicePath, TmpDevicePath, DevicePathSize);
   
   DBG("SelfDevicePath=%s @%x\n", FileDevicePathToStr(SelfDevicePath), SelfDeviceHandle);
   
   // find the current directory
-  FilePathAsString = FileDevicePathToStr(SelfLoadedImage->FilePath);
+  FilePathAsString = FileDevicePathToStr (SelfLoadedImage->FilePath);
   if (FilePathAsString != NULL) {
-    SelfFullDevicePath = FileDevicePath(SelfDeviceHandle, FilePathAsString);
-    for (i = StrLen(FilePathAsString); i > 0 && FilePathAsString[i] != '\\'; i--) ;
-    if (i > 0) {
-      FilePathAsString[i] = 0;
-    } else {
-      FilePathAsString[0] = L'\\';
-      FilePathAsString[1] = 0;
+    SelfFullDevicePath = FileDevicePath (SelfDeviceHandle, FilePathAsString);
+    for (i = StrLen(FilePathAsString); i > 0 && FilePathAsString[i] != '\\'; i--) {
+      if (i > 0) {
+        FilePathAsString[i] = 0;
+      } else {
+        FilePathAsString[0] = L'\\';
+        FilePathAsString[1] = 0;
+      }
     }
   } else {
-    FilePathAsString = AllocateCopyPool(StrSize(L"\\"), L"\\");
+    FilePathAsString = AllocateCopyPool (StrSize (L"\\"), L"\\");
   }
   SelfDirPath = FilePathAsString;
   
-  DBG("SelfDirPath = %s\n", SelfDirPath);
+  DBG ("SelfDirPath = %s\n", SelfDirPath);
   
-  return FinishInitRefitLib();
+  return FinishInitRefitLib ();
 }
 
-VOID UninitRefitLib(VOID)
+VOID
+UninitRefitLib (
+  VOID
+  )
 {
   // called before running external programs to close open file handles
   
   if (SelfDir != NULL) {
-    SelfDir->Close(SelfDir);
+    SelfDir->Close (SelfDir);
     SelfDir = NULL;
   }
   
   if (OEMDir != NULL) {
-    OEMDir->Close(OEMDir);
+    OEMDir->Close (OEMDir);
     OEMDir = NULL;
   }
   
   if (ThemeDir != NULL) {
-    ThemeDir->Close(ThemeDir);
+    ThemeDir->Close (ThemeDir);
     ThemeDir = NULL;
   }
   
   if (SelfRootDir != NULL) {
-    SelfRootDir->Close(SelfRootDir);
+    SelfRootDir->Close (SelfRootDir);
     SelfRootDir = NULL;
   }
-  
-  UninitVolumes();
+  UninitVolumes ();
 }
 
 EFI_STATUS ReinitRefitLib(VOID)
