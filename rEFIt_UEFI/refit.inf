@@ -19,8 +19,8 @@
   BASE_NAME                     = CLOVER
   FILE_GUID                     = 8F7D7B1E-0E1C-4C98-B12E-4EC99C4081AC
   MODULE_TYPE                   = UEFI_APPLICATION
-  EDK_RELEASE_VERSION	          = 0x00020000
-  EFI_SPECIFICATION_VERSION		  = 0x00010000
+  EDK_RELEASE_VERSION           = 0x00020000
+  EFI_SPECIFICATION_VERSION     = 0x00010000
   VERSION_STRING                = 1.0
   ENTRY_POINT                   = RefitMain
 
@@ -78,66 +78,66 @@
   libeg/libeg.h
   libeg/libegint.h
   Platform/AcpiPatcher.c
-	Platform/ati_reg.h
-	Platform/AmlGenerator.c
-	Platform/AmlGenerator.h
-	Platform/ati.c
-	Platform/ati.h
-	Platform/boot.h
-	Platform/BootLog.c
-	Platform/BootOptions.c
-	Platform/Console.c
-	Platform/cpu.c
-	Platform/DataHubCpu.c
-	Platform/device_inject.c
-	Platform/device_inject.h
-	Platform/device_tree.c
-	Platform/device_tree.h
-	Platform/Edid.c
-	Platform/Events.c
-	Platform/hda.c
-	Platform/hda.h
+  Platform/ati_reg.h
+  Platform/AmlGenerator.c
+  Platform/AmlGenerator.h
+  Platform/ati.c
+  Platform/ati.h
+  Platform/boot.h
+  Platform/BootLog.c
+  Platform/BootOptions.c
+  Platform/Console.c
+  Platform/cpu.c
+  Platform/DataHubCpu.c
+  Platform/device_inject.c
+  Platform/device_inject.h
+  Platform/device_tree.c
+  Platform/device_tree.h
+  Platform/Edid.c
+  Platform/Events.c
+  Platform/hda.c
+  Platform/hda.h
   Platform/HdaCodecDump.c
   Platform/HdaCodecDump.h
-	Platform/gma.c
-	Platform/gma.h
-	Platform/guid.c
-	Platform/Injectors.c
-	Platform/LegacyBiosThunk.c
-	Platform/LegacyBiosThunk.h
-	Platform/LegacyBoot.c
-	Platform/memvendors.h
-	Platform/nvidia.c
-	Platform/nvidia.h
-	Platform/Platform.h
-	Platform/platformdata.c
-	Platform/plist.c
-	Platform/Pointer.c
-	Platform/Settings.c
-	Platform/smbios.c
-	Platform/spd.c
-	Platform/spd.h
-	Platform/string.c
-	Platform/string.h
-	Platform/StateGenerator.c
-	Platform/StateGenerator.h
-	Platform/usbfix.c
+  Platform/gma.c
+  Platform/gma.h
+  Platform/guid.c
+  Platform/Injectors.c
+  Platform/LegacyBiosThunk.c
+  Platform/LegacyBiosThunk.h
+  Platform/LegacyBoot.c
+  Platform/memvendors.h
+  Platform/nvidia.c
+  Platform/nvidia.h
+  Platform/Platform.h
+  Platform/platformdata.c
+  Platform/plist.c
+  Platform/Pointer.c
+  Platform/Settings.c
+  Platform/smbios.c
+  Platform/spd.c
+  Platform/spd.h
+  Platform/string.c
+  Platform/string.h
+  Platform/StateGenerator.c
+  Platform/StateGenerator.h
+  Platform/usbfix.c
   Platform/NullTextOutput.h
   Platform/NullTextOutput.c
-	Platform/b64cdecode.h
-	Platform/b64cdecode.c
-	Platform/FixBiosDsdt.c
-	Platform/loader.h
-	Platform/LoaderUefi.h
-	Platform/kernel_patcher.h
-	Platform/kernel_patcher.c
-	Platform/kext_patcher.c
-	Platform/kext_inject.c
-	Platform/kext_inject.h
-	Platform/Nvram.c
+  Platform/b64cdecode.h
+  Platform/b64cdecode.c
+  Platform/FixBiosDsdt.c
+  Platform/loader.h
+  Platform/LoaderUefi.h
+  Platform/kernel_patcher.h
+  Platform/kernel_patcher.c
+  Platform/kext_patcher.c
+  Platform/kext_inject.c
+  Platform/kext_inject.h
+  Platform/Nvram.c
   Platform/card_vlist.c
   Platform/PlatformDriverOverride.c
-	Platform/Hibernate.c
+  Platform/Hibernate.c
   Platform/Net.c
   Platform/sound.c
   Platform/StartupSound.c
@@ -237,14 +237,14 @@
   gEfiFirmwareVolume2ProtocolGuid               # PROTOCOL CONSUMES
   gEfiGraphicsOutputProtocolGuid                # PROTOCOL SOMETIMES_CONSUMES
   gEfiHiiFontProtocolGuid                       # PROTOCOL CONSUMES
-  gEfiLegacy8259ProtocolGuid					          ## PROTOCOL SOMETIMES_CONSUMES
+  gEfiLegacy8259ProtocolGuid                    ## PROTOCOL SOMETIMES_CONSUMES
   gEfiLoadedImageProtocolGuid                   # PROTOCOL CONSUMES
   gEfiOEMBadgingProtocolGuid                    # PROTOCOL CONSUMES
   gEfiPciIoProtocolGuid                         # PROTOCOL CONSUMES
   gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
   gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
   gEfiSimpleNetworkProtocolGuid                 # PROTOCOL CONSUMES
-  gEfiStatusCodeRuntimeProtocolGuid				      # PROTOCOL CONSUMES
+  gEfiStatusCodeRuntimeProtocolGuid             # PROTOCOL CONSUMES
   gEfiUgaDrawProtocolGuid |PcdUgaConsumeSupport # PROTOCOL SOMETIMES_CONSUMES
   gEfiManagedNetworkServiceBindingProtocolGuid
 
