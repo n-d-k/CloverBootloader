@@ -101,172 +101,178 @@ static BOOLEAN haveError = FALSE;
 // Screen initialization and switching
 //
 
-VOID InitScreen(IN BOOLEAN SetMaxResolution)
+VOID
+InitScreen (
+  IN BOOLEAN          SetMaxResolution
+  )
 {
-	//DbgHeader("InitScreen");
-    // initialize libeg
-    egInitScreen(SetMaxResolution);
+  // initialize libeg
+  egInitScreen(SetMaxResolution);
     
-    if (egHasGraphicsMode()) {
-        egGetScreenSize(&UGAWidth, &UGAHeight);
-        AllowGraphicsMode = TRUE;
-    } else {
-        AllowGraphicsMode = FALSE;
-		//egSetGraphicsModeEnabled(FALSE);   // just to be sure we are in text mode
-    }
+  if (egHasGraphicsMode ()) {
+    egGetScreenSize(&UGAWidth, &UGAHeight);
+    AllowGraphicsMode = TRUE;
+  } else {
+    AllowGraphicsMode = FALSE;
+  }
 	
-    GraphicsScreenDirty = TRUE;
-    
-    // disable cursor
-	gST->ConOut->EnableCursor(gST->ConOut, FALSE);
-    
-    UpdateConsoleVars();
-
-    // show the banner (even when in graphics mode)
-	//DrawScreenHeader(L"Initializing...");
+  GraphicsScreenDirty = TRUE;
+	gST->ConOut->EnableCursor (gST->ConOut, FALSE);
+  UpdateConsoleVars ();
 }
 
-VOID SetupScreen(VOID)
+VOID
+SetupScreen (
+  VOID
+  )
 {
-    if (GlobalConfig.TextOnly) {
-        // switch to text mode if requested
-        AllowGraphicsMode = FALSE;
-        SwitchToText(FALSE);
-    } else if (AllowGraphicsMode) {
-        // clear screen and show banner
-        // (now we know we'll stay in graphics mode)
-        SwitchToGraphics();
-		//BltClearScreen(TRUE);
-    }
+  if (GlobalConfig.TextOnly) {
+    // switch to text mode if requested
+    AllowGraphicsMode = FALSE;
+    SwitchToText (FALSE);
+  } else if (AllowGraphicsMode) {
+    // clear screen and show banner
+    // (now we know we'll stay in graphics mode)
+    SwitchToGraphics ();
+    //BltClearScreen(TRUE);
+  }
 }
 
-static VOID SwitchToText(IN BOOLEAN CursorEnabled)
+STATIC
+VOID
+SwitchToText (
+  IN BOOLEAN        CursorEnabled
+  )
 {
-    egSetGraphicsModeEnabled(FALSE);
+  egSetGraphicsModeEnabled (FALSE);
 	gST->ConOut->EnableCursor(gST->ConOut, CursorEnabled);
 }
 
-static VOID SwitchToGraphics(VOID)
+STATIC
+VOID
+SwitchToGraphics (
+  VOID
+  )
 {
-    if (AllowGraphicsMode && !egIsGraphicsModeEnabled()) {
-      InitScreen(FALSE);
-        egSetGraphicsModeEnabled(TRUE);
-        GraphicsScreenDirty = TRUE;
-    }
+  if (AllowGraphicsMode && !egIsGraphicsModeEnabled ()) {
+    InitScreen (FALSE);
+    egSetGraphicsModeEnabled (TRUE);
+    GraphicsScreenDirty = TRUE;
+  }
 }
 
 //
 // Screen control for running tools
 //
-VOID BeginTextScreen(IN CHAR16 *Title)
+VOID
+BeginTextScreen (
+  IN CHAR16       *Title
+  )
 {
-    DrawScreenHeader(Title);
-    SwitchToText(FALSE);
-    
-    // reset error flag
-    haveError = FALSE;
+  DrawScreenHeader (Title);
+  SwitchToText (FALSE);
+  haveError = FALSE;
 }
 
-VOID FinishTextScreen(IN BOOLEAN WaitAlways)
+VOID
+FinishTextScreen (
+  IN BOOLEAN        WaitAlways
+  )
 {
-    if (haveError || WaitAlways) {
-        SwitchToText(FALSE);
- //       PauseForKey(L"FinishTextScreen");
-    }
-    
-    // reset error flag
-    haveError = FALSE;
+  if (haveError || WaitAlways) {
+    SwitchToText (FALSE);
+  }
+  haveError = FALSE;
 }
 
-VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title)
+VOID
+BeginExternalScreen (
+  IN BOOLEAN        UseGraphicsMode,
+  IN CHAR16         *Title
+  )
 {
 	if (!AllowGraphicsMode) {
-        UseGraphicsMode = FALSE;
+    UseGraphicsMode = FALSE;
 	}
-    
-    if (UseGraphicsMode) {
-        SwitchToGraphics();
-		//BltClearScreen(FALSE);
-    }
-    
-    // show the header
-	//DrawScreenHeader(Title);
-    
-	if (!UseGraphicsMode) {
-        SwitchToText(TRUE);
-	}
-    
-    // reset error flag
-    haveError = FALSE;
+  if (UseGraphicsMode) {
+      SwitchToGraphics ();
+  }
+  if (!UseGraphicsMode) {
+    SwitchToText (TRUE);
+  }
+  haveError = FALSE;
 }
 
-VOID FinishExternalScreen(VOID)
+VOID
+FinishExternalScreen (
+  VOID
+  )
 {
-    // make sure we clean up later
-    GraphicsScreenDirty = TRUE;
-    
-    if (haveError) {
-        // leave error messages on screen in case of error,
-        // wait for a key press, and then switch
-        PauseForKey(L"was error, press any key\n");
-        SwitchToText(FALSE);
-    }
-    
-    // reset error flag
-    haveError = FALSE;
+  // make sure we clean up later
+  GraphicsScreenDirty = TRUE;
+  
+  if (haveError) {
+    // leave error messages on screen in case of error,
+    // wait for a key press, and then switch
+    PauseForKey (L"was error, press any key\n");
+    SwitchToText (FALSE);
+  }
+  haveError = FALSE;
 }
 
-VOID TerminateScreen(VOID)
+VOID
+TerminateScreen (
+  VOID
+  )
 {
-    // clear text screen
-	gST->ConOut->SetAttribute(gST->ConOut, ATTR_BANNER);
-	gST->ConOut->ClearScreen(gST->ConOut);
-    
-    // enable cursor
-	gST->ConOut->EnableCursor(gST->ConOut, TRUE);
+	gST->ConOut->SetAttribute (gST->ConOut, ATTR_BANNER);
+	gST->ConOut->ClearScreen (gST->ConOut);
+	gST->ConOut->EnableCursor (gST->ConOut, TRUE);
 }
 
-static VOID DrawScreenHeader(IN CHAR16 *Title)
+STATIC
+VOID
+DrawScreenHeader (
+  IN CHAR16       *Title
+  )
 {
   UINTN i;
-	CHAR16* BannerLine = AllocatePool((ConWidth + 1) * sizeof(CHAR16));
+	CHAR16* BannerLine = AllocatePool ((ConWidth + 1) * sizeof (CHAR16));
   BannerLine[ConWidth] = 0;
 
-  // clear to black background
-	//gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
-  //gST->ConOut->ClearScreen (gST->ConOut);
-
   // paint header background
-  gST->ConOut->SetAttribute(gST->ConOut, ATTR_BANNER);
+  gST->ConOut->SetAttribute (gST->ConOut, ATTR_BANNER);
 	
-	for (i = 1; i < ConWidth-1; i++) {
+	for (i = 1; i < ConWidth - 1; i++) {
     BannerLine[i] = BOXDRAW_HORIZONTAL;
 	}
 	
 	BannerLine[0] = BOXDRAW_DOWN_RIGHT;
 	BannerLine[ConWidth-1] = BOXDRAW_DOWN_LEFT;
   gST->ConOut->SetCursorPosition (gST->ConOut, 0, 0);
-	Print(BannerLine);
+	Print (BannerLine);
 
-	for (i = 1; i < ConWidth-1; i++)
+  for (i = 1; i < ConWidth - 1; i++) {
     BannerLine[i] = ' ';
+  }
 	BannerLine[0] = BOXDRAW_VERTICAL;
 	BannerLine[ConWidth-1] = BOXDRAW_VERTICAL;
   gST->ConOut->SetCursorPosition (gST->ConOut, 0, 1);
-	Print(BannerLine);
+	Print (BannerLine);
 
-	for (i = 1; i < ConWidth-1; i++)
+  for (i = 1; i < ConWidth - 1; i++) {
     BannerLine[i] = BOXDRAW_HORIZONTAL;
+  }
  	BannerLine[0] = BOXDRAW_UP_RIGHT;
 	BannerLine[ConWidth-1] = BOXDRAW_UP_LEFT;
   gST->ConOut->SetCursorPosition (gST->ConOut, 0, 2);
 	Print(BannerLine);
 
-	FreePool(BannerLine);
+	FreePool (BannerLine);
 
   // print header text
   gST->ConOut->SetCursorPosition (gST->ConOut, 3, 1);
-  Print(L"Clover rev %s - %s", gFirmwareRevision, Title);
+  Print (L"Clover rev %s - %s", gFirmwareRevision, Title);
 
   // reposition cursor
   gST->ConOut->SetAttribute (gST->ConOut, ATTR_BASIC);
@@ -276,23 +282,25 @@ static VOID DrawScreenHeader(IN CHAR16 *Title)
 //
 // Keyboard input
 //
-
-BOOLEAN ReadAllKeyStrokes(VOID)
+BOOLEAN
+ReadAllKeyStrokes (
+  VOID
+  )
 {
-    BOOLEAN       GotKeyStrokes;
-    EFI_STATUS    Status;
-    EFI_INPUT_KEY key;
-    
-    GotKeyStrokes = FALSE;
-    for (;;) {
-        Status = gST->ConIn->ReadKeyStroke (gST->ConIn, &key);
-        if (Status == EFI_SUCCESS) {
-            GotKeyStrokes = TRUE;
-            continue;
-        }
-        break;
-    }
-    return GotKeyStrokes;
+  BOOLEAN       GotKeyStrokes;
+  EFI_STATUS    Status;
+  EFI_INPUT_KEY key;
+  
+  GotKeyStrokes = FALSE;
+  for (;;) {
+      Status = gST->ConIn->ReadKeyStroke (gST->ConIn, &key);
+      if (Status == EFI_SUCCESS) {
+          GotKeyStrokes = TRUE;
+          continue;
+      }
+      break;
+  }
+  return GotKeyStrokes;
 }
 
 VOID PauseForKey(CHAR16* msg)
@@ -338,20 +346,6 @@ VOID EndlessIdleLoop(VOID)
     }
 }
 
-//
-// Error handling
-//
-/*
-VOID
-StatusToString (
-				OUT CHAR16      *Buffer,
-				EFI_STATUS      Status
-				)
-{
-	UnicodeSPrint(Buffer, 64, L"EFI Error %r", Status);
-}*/
-
-
 BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where)
 {
 //    CHAR16 ErrorName[64];
@@ -390,7 +384,10 @@ BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
 // Graphics functions
 //
 
-VOID SwitchToGraphicsAndClear(VOID)
+VOID
+SwitchToGraphicsAndClear (
+  VOID
+  )
 {
     SwitchToGraphics();
 	if (GraphicsScreenDirty) {
@@ -408,95 +405,22 @@ typedef struct {
 */
 
 
-VOID BltClearScreen(IN BOOLEAN ShowBanner) //ShowBanner always TRUE
+VOID
+BltClearScreen (
+  IN BOOLEAN        ShowBanner
+  )
 {
   EG_PIXEL *p1;
   INTN i, j, x, x1, x2, y, y1, y2;
-  /* Hide banner
-  if (BanHeight < 2) {
-    BanHeight = ((UGAHeight - (int)(LAYOUT_TOTAL_HEIGHT * GlobalConfig.Scale)) >> 1);
-    //+ (int)(LAYOUT_TOTAL_HEIGHT * GlobalConfig.Scale); //LAYOUT_TOTAL_HEIGHT=376
+  if (GlobalConfig.DarkEmbedded) {
+    CopyMem (&BlueBackgroundPixel, &DarkEmbeddedBackgroundPixel, sizeof (EG_PIXEL));
+  } else {
+    CopyMem (&BlueBackgroundPixel, &StdBackgroundPixel, sizeof (EG_PIXEL));
   }
-
-  if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)) {
-    // Banner is used in this theme
-    if (!Banner) {
-      // Banner is not loaded yet
-      if (IsEmbeddedTheme()) {
-        // embedded theme - use text as banner
-   //     Banner = egCreateImage(7 * StrLen(L"CLOVER"), 32, TRUE);
-   //     egFillImage(Banner, &MenuBackgroundPixel);
-   //     egRenderText(L"CLOVER", Banner, 0, 0, 0xFFFF);
-   //     CopyMem(&BlueBackgroundPixel, &StdBackgroundPixel, sizeof(EG_PIXEL));
-   //     DebugLog(1, "Text <%s> rendered\n", L"Clover");
-        Banner = BuiltinIcon(BUILTIN_ICON_BANNER);
-*/        if (GlobalConfig.DarkEmbedded) {
-          CopyMem(&BlueBackgroundPixel, &DarkEmbeddedBackgroundPixel, sizeof(EG_PIXEL));
-        } else {
-          CopyMem(&BlueBackgroundPixel, &StdBackgroundPixel, sizeof(EG_PIXEL));
-        }
- /*     } else  {
-        Banner = egLoadImage(ThemeDir, GlobalConfig.BannerFileName, FALSE);
-        if (Banner) {
-          // Banner was changed, so copy into BlueBackgroundBixel first pixel of banner
-          CopyMem(&BlueBackgroundPixel, &Banner->PixelData[0], sizeof(EG_PIXEL));
-        } else {
-          DBG("banner file not read\n");
-        }
-      }
-    }
-    if (Banner) {
-      // Banner was loaded, so calculate its size and position
-      BannerPlace.Width = Banner->Width;
-      BannerPlace.Height = (BanHeight >= Banner->Height) ? (INTN)Banner->Height : BanHeight;
- //     DBG("banner width-height [%d,%d]\n", BannerPlace.Width, BannerPlace.Height);
- //     DBG("global banner pos [%d,%d]\n", GlobalConfig.BannerPosX, GlobalConfig.BannerPosY);
-      if (GlobalConfig.TypeSVG) {
-        BannerPlace.XPos = GlobalConfig.BannerPosX;
-        BannerPlace.YPos = GlobalConfig.BannerPosY;
-      } else {
-        // Check if new style placement value was used for banner in theme.plist
-
-        if ((GlobalConfig.BannerPosX >=0 && GlobalConfig.BannerPosX <=1000) && (GlobalConfig.BannerPosY >=0 && GlobalConfig.BannerPosY <=1000)) {
-          // Check if screen size being used is different from theme origination size.
-          // If yes, then recalculate the placement % value.
-          // This is necessary because screen can be a different size, but banner is not scaled.
-          BannerPlace.XPos = HybridRepositioning(GlobalConfig.BannerEdgeHorizontal, GlobalConfig.BannerPosX, BannerPlace.Width,  UGAWidth,  GlobalConfig.ThemeDesignWidth );
-          BannerPlace.YPos = HybridRepositioning(GlobalConfig.BannerEdgeVertical,   GlobalConfig.BannerPosY, BannerPlace.Height, UGAHeight, GlobalConfig.ThemeDesignHeight);
-          // Check if banner is required to be nudged.
-          BannerPlace.XPos = CalculateNudgePosition(BannerPlace.XPos, GlobalConfig.BannerNudgeX, Banner->Width,  UGAWidth);
-          BannerPlace.YPos = CalculateNudgePosition(BannerPlace.YPos, GlobalConfig.BannerNudgeY, Banner->Height, UGAHeight);
- //         DBG("banner position new style\n");
-        } else {
-          // Use rEFIt default (no placement values speicifed)
-          BannerPlace.XPos = (UGAWidth - Banner->Width) >> 1;
-          BannerPlace.YPos = (BanHeight >= Banner->Height) ? (BanHeight - Banner->Height) : 0;
-  //        DBG("banner position old style\n");
-        }
-      }
-    }
-  }
-
-//  DBG("Banner position [%d,%d]\n",  BannerPlace.XPos, BannerPlace.YPos);
-
-  if (!Banner || (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER) || 
-      !IsImageWithinScreenLimits(BannerPlace.XPos, BannerPlace.Width, UGAWidth) || 
-      !IsImageWithinScreenLimits(BannerPlace.YPos, BannerPlace.Height, UGAHeight)) {
-    // Banner is disabled or it cannot be used, apply defaults for placement
-    if (Banner) {
-      FreePool(Banner);
-      Banner = NULL;
-    }
-    BannerPlace.XPos = 0;
-    BannerPlace.YPos = 0;
-    BannerPlace.Width = UGAWidth;
-    BannerPlace.Height = BanHeight;
-  }
-  */
   
   // Load Background and scale
   if (!BigBack && (GlobalConfig.BackgroundName != NULL)) {
-    BigBack = egLoadImage(ThemeDir, GlobalConfig.BackgroundName, FALSE);
+    BigBack = egLoadImage (ThemeDir, GlobalConfig.BackgroundName, FALSE);
   }
   
   if (BackgroundImage != NULL && (BackgroundImage->Width != UGAWidth || BackgroundImage->Height != UGAHeight)) {
@@ -562,12 +486,8 @@ VOID BltClearScreen(IN BOOLEAN ShowBanner) //ShowBanner always TRUE
   
   // Draw background
   if (BackgroundImage) {
-/*    DBG("BltClearScreen(%c): calling BltImage BackgroundImage %p\n",
-        ShowBanner?'Y':'N', BackgroundImage); */
     BltImage(BackgroundImage, 0, 0); //if NULL then do nothing
   } else {
-/*    DBG("BltClearScreen(%c): calling egClearScreen StdBackgroundPixel %02x%02x%02x%02x\n",
-        ShowBanner?'Y':'N', StdBackgroundPixel.r, StdBackgroundPixel.g, StdBackgroundPixel.b, StdBackgroundPixel.a); */
     egClearScreen(&StdBackgroundPixel);
   }
   
@@ -583,16 +503,28 @@ VOID BltClearScreen(IN BOOLEAN ShowBanner) //ShowBanner always TRUE
   GraphicsScreenDirty = FALSE;
 }
 
-VOID BltImage(IN EG_IMAGE *Image, IN INTN XPos, IN INTN YPos)
+VOID
+BltImage (
+  IN EG_IMAGE        *Image,
+  IN INTN            XPos,
+  IN INTN            YPos
+  )
 {
   if (!Image) {
     return;
   }
-  egDrawImageArea(Image, 0, 0, 0, 0, XPos, YPos);
+  egDrawImageArea (Image, 0, 0, 0, 0, XPos, YPos);
   GraphicsScreenDirty = TRUE;
 }
 
-VOID BltImageAlpha(IN EG_IMAGE *Image, IN INTN XPos, IN INTN YPos, IN EG_PIXEL *BackgroundPixel, INTN Scale)
+VOID
+BltImageAlpha (
+  IN EG_IMAGE *Image,
+  IN INTN     XPos,
+  IN INTN     YPos,
+  IN EG_PIXEL *BackgroundPixel,
+  IN INTN     Scale
+  )
 {
   EG_IMAGE *CompImage;
   EG_IMAGE *NewImage = NULL;
@@ -633,7 +565,13 @@ VOID BltImageAlpha(IN EG_IMAGE *Image, IN INTN XPos, IN INTN YPos, IN EG_PIXEL *
   egFreeImage(NewImage);
 }
 
-VOID BltImageComposite(IN EG_IMAGE *BaseImage, IN EG_IMAGE *TopImage, IN INTN XPos, IN INTN YPos)
+VOID
+BltImageComposite (
+  IN EG_IMAGE *BaseImage,
+  IN EG_IMAGE *TopImage,
+  IN INTN     XPos,
+  IN INTN     YPos
+  )
 {
   INTN TotalWidth, TotalHeight, CompWidth, CompHeight, OffsetX, OffsetY;
   EG_IMAGE *CompImage;
@@ -676,7 +614,15 @@ VOID BltImageComposite(IN EG_IMAGE *BaseImage, IN EG_IMAGE *TopImage, IN INTN XP
   BaseImage = MainImage, TopImage = Selection
 */
 
-VOID BltImageCompositeBadge(IN EG_IMAGE *BaseImage, IN EG_IMAGE *TopImage, IN EG_IMAGE *BadgeImage, IN INTN XPos, IN INTN YPos, INTN Scale)
+VOID
+BltImageCompositeBadge (
+  IN EG_IMAGE *BaseImage,
+  IN EG_IMAGE *TopImage,
+  IN EG_IMAGE *BadgeImage,
+  IN INTN      XPos,
+  IN INTN      YPos,
+  IN INTN      Scale
+  )
 {
   INTN TotalWidth, TotalHeight, CompWidth, CompHeight, OffsetX, OffsetY, OffsetXTmp, OffsetYTmp;
   BOOLEAN Selected = TRUE;
@@ -800,7 +746,10 @@ VOID BltImageCompositeBadge(IN EG_IMAGE *BaseImage, IN EG_IMAGE *TopImage, IN EG
     
 #define MAX_SIZE_ANIME 256
 
-VOID FreeAnime(GUI_ANIME *Anime)
+VOID
+FreeAnime (
+  GUI_ANIME *Anime
+  )
 {
    if (Anime) {
      if (Anime->Path) {
@@ -808,54 +757,17 @@ VOID FreeAnime(GUI_ANIME *Anime)
        Anime->Path = NULL;
      }
      FreePool(Anime);
-//     Anime = NULL;
    }
 }
 
-/* Replaced for now with Reposition* below
-INTN RecalculateImageOffset(INTN AnimDimension, INTN ValueToScale, INTN ScreenDimensionToFit, INTN ThemeDesignDimension)
-{
-    INTN SuppliedGapDimensionPxDesigned=0;
-    INTN OppositeGapDimensionPxDesigned=0;
-    INTN OppositeGapPcDesigned=0;
-    INTN ScreenDimensionLessAnim=0;
-    INTN GapNumTimesLarger=0;
-    INTN GapNumFinal=0;
-    INTN NewSuppliedGapPx=0;
-    INTN NewOppositeGapPx=0;
-    INTN ReturnValue=0;
-    
-    SuppliedGapDimensionPxDesigned = (ThemeDesignDimension * ValueToScale) / 100;
-    OppositeGapDimensionPxDesigned = ThemeDesignDimension - (SuppliedGapDimensionPxDesigned + AnimDimension);
-    OppositeGapPcDesigned = (OppositeGapDimensionPxDesigned * 100)/ThemeDesignDimension;
-    ScreenDimensionLessAnim = (ScreenDimensionToFit - AnimDimension);
-    if (ValueToScale > OppositeGapPcDesigned) {
-      GapNumTimesLarger = (ValueToScale * 100)/OppositeGapPcDesigned;
-      GapNumFinal = GapNumTimesLarger + 100;
-      NewOppositeGapPx = (ScreenDimensionLessAnim * 100)/GapNumFinal;
-      NewSuppliedGapPx = (NewOppositeGapPx * GapNumTimesLarger)/100;
-    } else if (ValueToScale < OppositeGapPcDesigned) {
-      GapNumTimesLarger = (OppositeGapPcDesigned * 100)/ValueToScale;
-      GapNumFinal = (GapNumTimesLarger + 100);
-      NewSuppliedGapPx = (ScreenDimensionLessAnim * 100)/GapNumFinal;
-      NewOppositeGapPx = (NewSuppliedGapPx * GapNumTimesLarger)/100;
-    } else if (ValueToScale == OppositeGapPcDesigned) {
-      NewSuppliedGapPx = (ScreenDimensionLessAnim * 100)/200;
-      NewOppositeGapPx = (NewSuppliedGapPx * 100)/100;
-    }
-    ReturnValue = (NewSuppliedGapPx * 100)/ScreenDimensionToFit;
-    
-    if (ReturnValue>0 && ReturnValue<100) {
-      //DBG("Different screen size being used. Adjusted original anim gap to %d\n",ReturnValue);
-      return ReturnValue;
-    } else {
-      DBG("Different screen size being used. Adjusted value %d invalid. Returning original value %d\n",ReturnValue, ValueToScale);
-      return ValueToScale;
-    }
-}
-*/
-
-static INTN ConvertEdgeAndPercentageToPixelPosition(INTN Edge, INTN DesiredPercentageFromEdge, INTN ImageDimension, INTN ScreenDimension)
+STATIC
+INTN
+ConvertEdgeAndPercentageToPixelPosition (
+  IN INTN       Edge,
+  IN INTN       DesiredPercentageFromEdge,
+  IN INTN       ImageDimension,
+  IN INTN       ScreenDimension
+  )
 {
   if (Edge == SCREEN_EDGE_LEFT || Edge == SCREEN_EDGE_TOP) {
       return ((ScreenDimension * DesiredPercentageFromEdge) / 100);
@@ -865,9 +777,16 @@ static INTN ConvertEdgeAndPercentageToPixelPosition(INTN Edge, INTN DesiredPerce
   return 0xFFFF; // to indicate that wrong edge was specified.
 }
 
-static INTN CalculateNudgePosition(INTN Position, INTN NudgeValue, INTN ImageDimension, INTN ScreenDimension)
+STATIC
+INTN
+CalculateNudgePosition (
+  IN INTN Position,
+  IN INTN NudgeValue,
+  IN INTN ImageDimension,
+  IN INTN ScreenDimension
+  )
 {
-  INTN value=Position;
+  INTN value = Position;
   
   if ((NudgeValue != INITVALUE) && (NudgeValue != 0) && (NudgeValue >= -32) && (NudgeValue <= 32)) {
     if ((value + NudgeValue >=0) && (value + NudgeValue <= ScreenDimension - ImageDimension)) {
@@ -877,22 +796,49 @@ static INTN CalculateNudgePosition(INTN Position, INTN NudgeValue, INTN ImageDim
   return value;
 }
 
-static BOOLEAN IsImageWithinScreenLimits(INTN Value, INTN ImageDimension, INTN ScreenDimension)
+STATIC
+BOOLEAN
+IsImageWithinScreenLimits (
+  IN INTN Value,
+  IN INTN ImageDimension,
+  IN INTN ScreenDimension
+  )
 {
   return (Value >= 0 && Value + ImageDimension <= ScreenDimension);
 }
 
-static INTN RepositionFixedByCenter(INTN Value, INTN ScreenDimension, INTN DesignScreenDimension)
+STATIC
+INTN
+RepositionFixedByCenter (
+  IN INTN Value,
+  IN INTN ScreenDimension,
+  IN INTN DesignScreenDimension
+  )
 {
   return (Value + ((ScreenDimension - DesignScreenDimension) / 2));
 }
 
-static INTN RepositionRelativeByGapsOnEdges(INTN Value, INTN ImageDimension, INTN ScreenDimension, INTN DesignScreenDimension)
+STATIC
+INTN
+RepositionRelativeByGapsOnEdges (
+  IN INTN Value,
+  IN INTN ImageDimension,
+  IN INTN ScreenDimension,
+  IN INTN DesignScreenDimension
+  )
 {
   return (Value * (ScreenDimension - ImageDimension) / (DesignScreenDimension - ImageDimension));
 }
 
-static INTN HybridRepositioning(INTN Edge, INTN Value, INTN ImageDimension, INTN ScreenDimension, INTN DesignScreenDimension)
+STATIC
+INTN
+HybridRepositioning (
+  IN INTN Edge,
+  IN INTN Value,
+  IN INTN ImageDimension,
+  IN INTN ScreenDimension,
+  IN INTN DesignScreenDimension
+  )
 {
   INTN pos, posThemeDesign;
   
@@ -914,7 +860,11 @@ static INTN HybridRepositioning(INTN Edge, INTN Value, INTN ImageDimension, INTN
 
 static EG_IMAGE *AnimeImage = NULL;
 
-VOID UpdateAnime(REFIT_MENU_SCREEN *Screen, EG_RECT *Place)
+VOID
+UpdateAnime (
+  IN REFIT_MENU_SCREEN *Screen,
+  IN EG_RECT           *Place
+  )
 {
   UINT64      Now;
   INTN        x, y;
@@ -985,7 +935,10 @@ VOID UpdateAnime(REFIT_MENU_SCREEN *Screen, EG_RECT *Place)
 }
 
 
-VOID InitAnime(REFIT_MENU_SCREEN *Screen)
+VOID
+InitAnime (
+  IN REFIT_MENU_SCREEN  *Screen
+  )
 {
   CHAR16      FileName[256];
   CHAR16      *Path;
@@ -1096,7 +1049,10 @@ VOID InitAnime(REFIT_MENU_SCREEN *Screen)
 //  DBG("anime inited\n");
 }
 
-BOOLEAN GetAnime(REFIT_MENU_SCREEN *Screen)
+BOOLEAN
+GetAnime (
+  IN REFIT_MENU_SCREEN   *Screen
+  )
 {
   GUI_ANIME   *Anime;
   
@@ -1131,7 +1087,11 @@ VOID SetNextScreenMode(INT32 Next)
 // This should be called when initializing screen, or when resolution changes
 //
 
-static VOID UpdateConsoleVars()
+STATIC
+VOID
+UpdateConsoleVars (
+  VOID
+  )
 {
     UINTN i;
 

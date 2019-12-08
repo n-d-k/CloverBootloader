@@ -358,7 +358,10 @@ EFI_STATUS egSetScreenResolution(IN CHAR16 *WidthHeight)
     return EFI_UNSUPPORTED;
 }
 
-VOID egInitScreen(IN BOOLEAN SetMaxResolution)
+VOID
+egInitScreen (
+  IN BOOLEAN       SetMaxResolution
+  )
 {
     EFI_STATUS Status;
     UINT32 Width, Height, Depth, RefreshRate;
@@ -457,9 +460,12 @@ CHAR16 * egScreenDescription(VOID)
     }
 }
 
-BOOLEAN egHasGraphicsMode(VOID)
+BOOLEAN
+egHasGraphicsMode (
+  VOID
+  )
 {
-    return egHasGraphics;
+  return egHasGraphics;
 }
 
 BOOLEAN egIsGraphicsModeEnabled(VOID)

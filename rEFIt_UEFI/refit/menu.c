@@ -2155,9 +2155,13 @@ VOID AddMenuInfoLine(IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine)
   AddListElement((VOID ***) &(Screen->InfoLines), (UINTN*)&(Screen->InfoLineCount), InfoLine);
 }
 
-VOID AddMenuEntry(IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry)
+VOID
+AddMenuEntry (
+  IN REFIT_MENU_SCREEN *Screen,
+  IN REFIT_MENU_ENTRY  *Entry
+  )
 {
-  AddListElement((VOID ***) &(Screen->Entries), (UINTN*)&(Screen->EntryCount), Entry);
+  AddListElement ((VOID ***) &(Screen->Entries), (UINTN*)&(Screen->EntryCount), Entry);
 }
 
 VOID FreeMenu(IN REFIT_MENU_SCREEN *Screen)

@@ -230,7 +230,7 @@ StartEFILoadedImage (
   //
   gBS->SetWatchdogTimer (600, 0x0000, 0x00, NULL);
 
-  ReturnStatus = Status = gBS->StartImage(ChildImageHandle, NULL, NULL);
+  ReturnStatus = Status = gBS->StartImage (ChildImageHandle, NULL, NULL);
   //
   // Clear the Watchdog Timer after the image returns
   //
@@ -1132,7 +1132,6 @@ StartTool (
     StartEFIImage(Entry->DevicePath, Entry->LoadOptions, Basename(Entry->LoaderPath),
                   Basename(Entry->LoaderPath), NULL, NULL);
     FinishExternalScreen();
-	//ReinitSelfLib();
 }
 
 //
@@ -2299,8 +2298,6 @@ RefitMain (
     InitScreen (FALSE);
   }
 	
-  //  DBG("DBG: ReinitSelfLib\n");
-  //Now we have to reinit handles
   Status = ReinitSelfLib ();
   if (EFI_ERROR(Status)){
     DebugLog (2, " %r", Status);
@@ -2310,8 +2307,7 @@ RefitMain (
 #endif // ENABLE_SECURE_BOOT
     return Status;
   }
-  
-  //  DBG("DBG: messages\n");
+
   if (!GlobalConfig.NoEarlyProgress && !GlobalConfig.FastBoot && GlobalConfig.Timeout>0) {
     FirstMessage = PoolPrint (L"   Welcome to Clover %s   ", gFirmwareRevision);
     DrawTextXY(FirstMessage, (UGAWidth >> 1), UGAHeight >> 1, X_IS_CENTER);

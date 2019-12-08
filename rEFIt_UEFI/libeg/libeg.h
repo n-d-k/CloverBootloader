@@ -143,24 +143,11 @@ typedef enum {
 typedef struct {
     UINT8 b, g, r, a;
 } EG_PIXEL;
-/*
-typedef struct {
-  UINT8 Blue;
-  UINT8 Green;
-  UINT8 Red;
-  UINT8 Reserved;
-} EFI_GRAPHICS_OUTPUT_BLT_PIXEL;
-
-typedef union {
-  EFI_GRAPHICS_OUTPUT_BLT_PIXEL Pixel;
-  UINT32                        Raw;
-} EFI_GRAPHICS_OUTPUT_BLT_PIXEL_UNION;
-*/
 
 
 typedef struct {
-    INTN      Width;
-    INTN      Height;
+    INTN        Width;
+    INTN        Height;
     EG_PIXEL    *PixelData;
     BOOLEAN     HasAlpha;   //moved here to avoid alignment issue
 } EG_IMAGE;
@@ -198,7 +185,11 @@ typedef struct {
 
 /* functions */
 
-VOID    egInitScreen(IN BOOLEAN SetMaxResolution);
+VOID
+egInitScreen (
+  IN BOOLEAN   SetMaxResolution
+  );
+
 VOID    egDumpGOPVideoModes(VOID);
 EFI_STATUS egSetScreenResolution(IN CHAR16 *WidthHeight); 
 EFI_STATUS egSetMaxResolution(VOID);
@@ -206,7 +197,12 @@ EFI_STATUS egSetMode(INT32 Next);
 
 VOID    egGetScreenSize(OUT INTN *ScreenWidth, OUT INTN *ScreenHeight);
 CHAR16* egScreenDescription(VOID);
-BOOLEAN egHasGraphicsMode(VOID);
+
+BOOLEAN
+egHasGraphicsMode (
+  VOID
+  );
+
 BOOLEAN egIsGraphicsModeEnabled(VOID);
 VOID    egSetGraphicsModeEnabled(IN BOOLEAN Enable);
 // NOTE: Even when egHasGraphicsMode() returns FALSE, you should

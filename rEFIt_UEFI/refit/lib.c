@@ -270,7 +270,10 @@ EFI_STATUS ReinitRefitLib(VOID)
   return FinishInitRefitLib();
 }
 
-EFI_STATUS ReinitSelfLib(VOID)
+EFI_STATUS
+ReinitSelfLib (
+  VOID
+  )
 {
   // called after reconnect drivers to re-open file handles
   
@@ -355,7 +358,12 @@ VOID CreateList(OUT VOID ***ListPtr, OUT UINTN *ElementCount, IN UINTN InitialEl
   }
 }
 
-VOID AddListElement(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount, IN VOID *NewElement)
+VOID
+AddListElement (
+  IN OUT VOID    ***ListPtr,
+  IN OUT UINTN   *ElementCount,
+  IN VOID        *NewElement
+  )
 {
   UINTN AllocateCount;
   
@@ -369,23 +377,6 @@ VOID AddListElement(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount, IN VOID 
   (*ListPtr)[*ElementCount] = NewElement;
   (*ElementCount)++;
 }
-/*
-VOID FreeList(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount)
-{
-  UINTN i;
-  
-  if (*ElementCount > 0) {
-    for (i = 0; i < *ElementCount; i++) {
-      // TODO: call a user-provided routine for each element here
-      FreePool((*ListPtr)[i]);
-    }
-    FreePool(*ListPtr);
-  }
-}
-*/
-//
-// firmware device path discovery
-//
 
 static UINT8 LegacyLoaderMediaPathData[] = {
   0x04, 0x06, 0x14, 0x00, 0xEB, 0x85, 0x05, 0x2B,

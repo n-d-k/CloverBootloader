@@ -129,7 +129,10 @@ CHAR16 * GetIconsExt(IN CHAR16 *Icon, IN CHAR16 *Def)
   return PoolPrint(L"%s.%s", Icon, ((GlobalConfig.IconFormat != ICON_FORMAT_DEF) && (IconFormat != NULL)) ? IconFormat : Def);
 }
 
-EG_IMAGE * BuiltinIcon(IN UINTN Id)
+EG_IMAGE *
+BuiltinIcon (
+  IN UINTN Id
+  )
 {
   INTN      Size;
   EG_IMAGE  *TextBuffer = NULL;

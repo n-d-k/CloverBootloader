@@ -703,7 +703,11 @@ EFI_STATUS  InitRefitLib(IN EFI_HANDLE ImageHandle);
 EFI_STATUS  GetRootFromPath(IN EFI_DEVICE_PATH_PROTOCOL* DevicePath, OUT EFI_FILE **Root);
 VOID        UninitRefitLib(VOID);
 EFI_STATUS  ReinitRefitLib(VOID);
-EFI_STATUS  ReinitSelfLib(VOID);
+
+EFI_STATUS
+ReinitSelfLib (
+  VOID
+  );
 //extern EFI_STATUS FinishInitRefitLib(VOID); -- static
 VOID        PauseForKey(IN CHAR16 *Msg);
 BOOLEAN     IsEmbeddedTheme(VOID);
@@ -805,7 +809,12 @@ extern EG_IMAGE *BackgroundImage;
 
 
 VOID InitScreen(IN BOOLEAN SetMaxResolution);
-VOID SetupScreen(VOID);
+
+VOID
+SetupScreen (
+  VOID
+  );
+
 VOID BeginTextScreen(IN CHAR16 *Title);
 VOID FinishTextScreen(IN BOOLEAN WaitAlways);
 VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title);
@@ -904,7 +913,11 @@ EG_IMAGE * GetSmallHover(IN UINTN Id);
 
 VOID AddMenuInfoLine(IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);
 VOID AddMenuInfo(IN REFIT_MENU_SCREEN  *SubScreen, IN CHAR16 *Line);
-VOID AddMenuEntry(IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
+VOID
+AddMenuEntry (
+  IN REFIT_MENU_SCREEN *Screen,
+  IN REFIT_MENU_ENTRY  *Entry
+  );
 VOID AddMenuCheck(REFIT_MENU_SCREEN *SubScreen, CONST CHAR8 *Text, UINTN Bit, INTN ItemNum);
 VOID FreeMenu(IN REFIT_MENU_SCREEN *Screen);
 UINTN RunMenu(IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry);
