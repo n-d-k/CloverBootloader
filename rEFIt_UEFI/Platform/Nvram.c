@@ -896,15 +896,6 @@ LoadLatestNvramPlist ()
     if (!Volume->RootDir) {
       continue;
     }
-    
-/*    Guid = FindGPTPartitionGuidInDevicePath (Volume->DevicePath);
-    
-    DBG (" %2d. Volume '%s', GUID = %g", Index, Volume->VolName, Guid);
-    if (Guid == NULL) {
-      // not a GUID partition
-      DBG (" - not GPT");
-    } */
-    
     // check if nvram.plist exists
     Status = Volume->RootDir->Open (Volume->RootDir, &FileHandle, L"nvram.plist", EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR(Status)) {

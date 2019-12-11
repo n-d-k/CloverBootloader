@@ -1645,12 +1645,6 @@ FindDefaultEntry (
   LOADER_ENTRY        *Entry;
   BOOLEAN             SearchForLoader;
 
-//  DBG("FindDefaultEntry ...\n");
-  //DbgHeader("FindDefaultEntry");
-  //
-  // try to detect volume set by Startup Disk or previous Clover selection
-  // with broken nvram this requires emulation to be installed.
-  // enable emulation to determin efi-boot-device-data
   if (gEmuVariableControl != NULL) {
     gEmuVariableControl->InstallEmulation(gEmuVariableControl);
   }
@@ -1673,13 +1667,7 @@ FindDefaultEntry (
 
     // if not null or empty, also search for loader that matches gSettings.DefaultLoader
     SearchForLoader = (gSettings.DefaultLoader != NULL && gSettings.DefaultLoader[0] != L'\0');
-/*
-    if (SearchForLoader) {
-      DBG("Searching for DefaultVolume '%s', DefaultLoader '%s' ...\n", gSettings.DefaultVolume, gSettings.DefaultLoader);
-    } else {
-      DBG("Searching for DefaultVolume '%s' ...\n", gSettings.DefaultVolume);
-    }
-*/
+
     for (Index = 0; ((Index < (INTN)MainMenu.EntryCount) && (MainMenu.Entries[Index]->Row == 0)); Index++) {
 
       Entry = (LOADER_ENTRY*)MainMenu.Entries[Index];
@@ -2396,12 +2384,6 @@ RefitMain (
     DBG ("Set MaxRatio for QEMU: %d\n", gCPUStructure.MaxRatio);
     gCPUStructure.MaxRatio *= 10;
     gCPUStructure.MinRatio = 60;
-/*    AsmWriteMsr64(MSR_FLEX_RATIO, ((6ULL << 40) + //(1ULL << 16) +
-                                   (gCPUStructure.MaxRatio << 8)));
-    DBG("check if flex is RW\n");
-    Msrflex = AsmReadMsr64(MSR_FLEX_RATIO); //0 == not Rw :(
-    DBG("MSR_FLEX_RATIO = %lx\n", Msrflex);
- */
     gCPUStructure.FSBFrequency = DivU64x32 (MultU64x32 (gCPUStructure.CPUFrequency, 10), (gCPUStructure.MaxRatio == 0) ? 1 : gCPUStructure.MaxRatio);
     gCPUStructure.ExternalClock = (UINT32) DivU64x32 (gCPUStructure.FSBFrequency + kilo - 1, kilo);
   }
@@ -2579,7 +2561,9 @@ RefitMain (
 #if CHECK_SMC
     DumpSmcKeys ();
 #endif
-
+//
+//  Key stroke even here
+//
     DefaultIndex = FindDefaultEntry ();
     DBG ("DefaultIndex=%d and MainMenu.EntryCount=%d\n", DefaultIndex, MainMenu.EntryCount);
     if ((DefaultIndex >= 0) && (DefaultIndex < (INTN) MainMenu.EntryCount)) {
