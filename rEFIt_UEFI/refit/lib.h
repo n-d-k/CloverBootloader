@@ -808,7 +808,10 @@ extern EG_RECT  BannerPlace;
 extern EG_IMAGE *BackgroundImage;
 
 
-VOID InitScreen(IN BOOLEAN SetMaxResolution);
+VOID
+InitScreen (
+  IN BOOLEAN SetMaxResolution
+  );
 
 VOID
 SetupScreen (
