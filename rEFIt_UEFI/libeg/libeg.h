@@ -41,7 +41,6 @@
 #include <Base.h>
 #include <Uefi.h>
 #include <FrameworkDxe.h>
-// Protocol Includes
 #include <Protocol/AbsolutePointer.h>
 #include <Protocol/AcpiTable.h>
 #include <Protocol/BlockIo.h>
@@ -104,9 +103,6 @@
 #include <Library/DevicePathLib.h>
 #include <Library/DxeServicesLib.h>
 #include <Library/DxeServicesTableLib.h>
-//#include <Library/EblCmdLib.h>
-//#include <Library/EblNetworkLib.h>
-//#include "EfiFileLib.h"
 #include <Library/HiiLib.h>
 #include <Library/HobLib.h>
 #include <Library/IoLib.h>
@@ -123,42 +119,10 @@
 #include <IndustryStandard/Pci.h>
 #include <IndustryStandard/SmBus.h>
 #include <IndustryStandard/Acpi.h>
-//#include <IndustryStandard/Acpi20.h>
-//#include <IndustryStandard/Acpi30.h>
-//#include <IndustryStandard/Acpi40.h>
 #include <IndustryStandard/HighPrecisionEventTimerTable.h>
 #include <IndustryStandard/Scsi.h>
 #include <IndustryStandard/Atapi.h>
 #include <IndustryStandard/AppleSmBios.h>
-
-/* types */
-
-typedef enum {
-  FONT_ALFA,
-  FONT_GRAY,
-  FONT_LOAD
-} FONT_TYPE;
-
-/* This should be compatible with EFI_UGA_PIXEL */
-typedef struct {
-    UINT8 b, g, r, a;
-} EG_PIXEL;
-
-
-typedef struct {
-    INTN        Width;
-    INTN        Height;
-    EG_PIXEL    *PixelData;
-    BOOLEAN     HasAlpha;   //moved here to avoid alignment issue
-} EG_IMAGE;
-
-typedef struct {
-  INTN     XPos;
-  INTN     YPos;
-  INTN     Width;
-  INTN     Height;
-} EG_RECT;
-
 
 #define TEXT_YMARGIN (2)
 #define TEXT_XMARGIN (8)
@@ -174,6 +138,33 @@ typedef struct {
 #define EG_EICOMPMODE_RLE           (1)
 #define EG_EICOMPMODE_EFICOMPRESS   (2)
 
+/* types */
+
+typedef enum {
+  FONT_ALFA,
+  FONT_GRAY,
+  FONT_LOAD
+} FONT_TYPE;
+
+/* This should be compatible with EFI_UGA_PIXEL */
+typedef struct {
+  UINT8 b, g, r, a;
+} EG_PIXEL;
+
+
+typedef struct {
+  INTN        Width;
+  INTN        Height;
+  EG_PIXEL    *PixelData;
+  BOOLEAN     HasAlpha;
+} EG_IMAGE;
+
+typedef struct {
+  INTN     XPos;
+  INTN     YPos;
+  INTN     Width;
+  INTN     Height;
+} EG_RECT;
 
 typedef struct {
   EG_IMAGE    *Image;
@@ -190,68 +181,233 @@ egInitScreen (
   IN BOOLEAN   SetMaxResolution
   );
 
-VOID    egDumpGOPVideoModes(VOID);
-EFI_STATUS egSetScreenResolution(IN CHAR16 *WidthHeight); 
-EFI_STATUS egSetMaxResolution(VOID);
-EFI_STATUS egSetMode(INT32 Next);
+VOID
+egDumpGOPVideoModes (
+  VOID
+  );
 
-VOID    egGetScreenSize(OUT INTN *ScreenWidth, OUT INTN *ScreenHeight);
-CHAR16* egScreenDescription(VOID);
+EFI_STATUS
+egSetScreenResolution (
+  IN CHAR16    *WidthHeight
+  );
+
+EFI_STATUS
+egSetMaxResolution (
+  VOID
+  );
+
+EFI_STATUS
+egSetMode (
+  IN INT32     Next
+  );
+
+VOID
+egGetScreenSize (
+  OUT INTN     *ScreenWidth,
+  OUT INTN     *ScreenHeight
+  );
+
+CHAR16 *
+egScreenDescription (
+  VOID
+  );
 
 BOOLEAN
 egHasGraphicsMode (
   VOID
   );
 
-BOOLEAN egIsGraphicsModeEnabled(VOID);
-VOID    egSetGraphicsModeEnabled(IN BOOLEAN Enable);
+BOOLEAN
+egIsGraphicsModeEnabled (
+  VOID
+  );
+
+VOID
+egSetGraphicsModeEnabled (
+  IN BOOLEAN    Enable
+  );
+
 // NOTE: Even when egHasGraphicsMode() returns FALSE, you should
 //  call egSetGraphicsModeEnabled(FALSE) to ensure the system
 //  is running in text mode. egHasGraphicsMode() only determines
 //  if libeg can draw to the screen in graphics mode.
 
-EG_IMAGE * egCreateImage(IN INTN Width, IN INTN Height, IN BOOLEAN HasAlpha);
-EG_IMAGE * egCreateFilledImage(IN INTN Width, IN INTN Height, IN BOOLEAN HasAlpha, IN EG_PIXEL *Color);
-EG_IMAGE * egCopyImage(IN EG_IMAGE *Image);
-EG_IMAGE * egCopyScaledImage(IN EG_IMAGE *Image, IN INTN Ratio);
-VOID       egFreeImage(IN EG_IMAGE *Image);
-VOID      ScaleImage(OUT EG_IMAGE *NewImage, IN EG_IMAGE *OldImage);
+EG_IMAGE *
+egCreateImage (
+  IN INTN       Width,
+  IN INTN       Height,
+  IN BOOLEAN    HasAlpha
+  );
 
-EG_IMAGE * egLoadImage(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName, IN BOOLEAN WantAlpha);
-EG_IMAGE * egLoadIcon(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName, IN UINTN IconSize);
+EG_IMAGE *
+egCreateFilledImage (
+  IN INTN       Width,
+  IN INTN       Height,
+  IN BOOLEAN    HasAlpha,
+  IN EG_PIXEL   *Color
+  );
 
-EG_IMAGE * egEnsureImageSize(IN EG_IMAGE *Image, IN INTN Width, IN INTN Height, IN EG_PIXEL *Color);
+EG_IMAGE *
+egCopyImage (
+  IN EG_IMAGE   *Image
+  );
 
-EFI_STATUS egLoadFile(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName,
-                      OUT UINT8 **FileData, OUT UINTN *FileDataLength);
-EFI_STATUS egSaveFile(IN EFI_FILE_HANDLE BaseDir OPTIONAL, IN CHAR16 *FileName,
-                      IN UINT8 *FileData, IN UINTN FileDataLength);
-EFI_STATUS egMkDir(IN EFI_FILE_HANDLE BaseDir OPTIONAL, IN CHAR16 *DirName);
-EFI_STATUS egFindESP(OUT EFI_FILE_HANDLE *RootDir);
+EG_IMAGE *
+egCopyScaledImage (
+  IN EG_IMAGE   *Image,
+  IN INTN       Ratio
+  );
 
-VOID egFillImage(IN OUT EG_IMAGE *CompImage, IN EG_PIXEL *Color);
-VOID egFillImageArea(IN OUT EG_IMAGE *CompImage,
-                     IN INTN AreaPosX, IN INTN AreaPosY,
-                     IN INTN AreaWidth, IN INTN AreaHeight,
-                     IN EG_PIXEL *Color);
-VOID egComposeImage(IN OUT EG_IMAGE *CompImage, IN EG_IMAGE *TopImage, IN INTN PosX, IN INTN PosY);
-VOID PrepareFont(VOID);
-VOID egMeasureText(IN CHAR16 *Text, OUT INTN *Width, OUT INTN *Height);
-INTN egRenderText(IN CHAR16 *Text, IN OUT EG_IMAGE *CompImage, IN INTN PosX, IN INTN PosY, IN INTN Cursor, INTN textType);
+VOID
+egFreeImage (
+  IN EG_IMAGE    *Image
+  );
 
-VOID egClearScreen(IN EG_PIXEL *Color);
-//VOID egDrawImage(IN EG_IMAGE *Image, IN INTN ScreenPosX, IN INTN ScreenPosY);
-VOID egDrawImageArea(IN EG_IMAGE *Image,
-                     IN INTN AreaPosX, IN INTN AreaPosY,
-                     IN INTN AreaWidth, IN INTN AreaHeight,
-                     IN INTN ScreenPosX, IN INTN ScreenPosY);
-VOID egTakeImage(IN EG_IMAGE *Image, INTN ScreenPosX, INTN ScreenPosY,
-                 IN INTN AreaWidth, IN INTN AreaHeight);
+VOID
+ScaleImage (
+  OUT EG_IMAGE   *NewImage,
+  IN EG_IMAGE    *OldImage
+  );
 
-EFI_STATUS egScreenShot(VOID);
+EG_IMAGE *
+egLoadImage (
+  IN EFI_FILE_HANDLE BaseDir,
+  IN CHAR16          *FileName,
+  IN BOOLEAN         WantAlpha
+  );
 
-INTN drawSVGtext(EG_IMAGE* TextBufferXY, INTN posX, INTN posY, INTN textType, const CHAR16* text, UINTN Cursor);
-VOID testSVG(VOID);
+EG_IMAGE *
+egLoadIcon (
+  IN EFI_FILE_HANDLE BaseDir,
+  IN CHAR16          *FileName,
+  IN UINTN           IconSize
+  );
+
+EG_IMAGE *
+egEnsureImageSize (
+  IN EG_IMAGE         *Image,
+  IN INTN             Width,
+  IN INTN             Height,
+  IN EG_PIXEL         *Color
+  );
+
+EFI_STATUS
+egLoadFile (
+  IN  EFI_FILE_HANDLE BaseDir,
+  IN  CHAR16          *FileName,
+  OUT UINT8           **FileData,
+  OUT UINTN           *FileDataLength
+  );
+
+EFI_STATUS
+egSaveFile (
+  IN EFI_FILE_HANDLE BaseDir OPTIONAL,
+  IN CHAR16          *FileName,
+  IN UINT8           *FileData,
+  IN UINTN           FileDataLength
+  );
+
+EFI_STATUS
+egMkDir (
+  IN EFI_FILE_HANDLE BaseDir OPTIONAL,
+  IN CHAR16          *DirName
+  );
+
+EFI_STATUS
+egFindESP (
+  OUT EFI_FILE_HANDLE *RootDir
+  );
+
+VOID
+egFillImage (
+  IN OUT EG_IMAGE    *CompImage,
+  IN     EG_PIXEL    *Color
+  );
+
+VOID
+egFillImageArea (
+  IN OUT EG_IMAGE    *CompImage,
+  IN INTN            AreaPosX,
+  IN INTN            AreaPosY,
+  IN INTN            AreaWidth,
+  IN INTN            AreaHeight,
+  IN EG_PIXEL        *Color
+  );
+
+VOID
+egComposeImage (
+  IN OUT EG_IMAGE    *CompImage,
+  IN EG_IMAGE        *TopImage,
+  IN INTN            PosX,
+  IN INTN            PosY
+  );
+
+VOID
+PrepareFont (
+  VOID
+  );
+
+VOID
+egMeasureText (
+  IN  CHAR16          *Text,
+  OUT INTN            *Width,
+  OUT INTN            *Height
+  );
+
+INTN
+egRenderText (
+  IN CHAR16           *Text,
+  IN OUT EG_IMAGE     *CompImage,
+  IN INTN             PosX,
+  IN INTN             PosY,
+  IN INTN             Cursor,
+  INTN                textType
+  );
+
+VOID
+egClearScreen (
+  IN EG_PIXEL         *Color
+  );
+
+VOID
+egDrawImageArea (
+  IN EG_IMAGE          *Image,
+  IN INTN              AreaPosX,
+  IN INTN              AreaPosY,
+  IN INTN              AreaWidth,
+  IN INTN              AreaHeight,
+  IN INTN              ScreenPosX,
+  IN INTN              ScreenPosY
+  );
+
+VOID
+egTakeImage (
+  IN EG_IMAGE          *Image,
+  IN INTN              ScreenPosX,
+  IN INTN              ScreenPosY,
+  IN INTN              AreaWidth,
+  IN INTN              AreaHeight
+  );
+
+EFI_STATUS
+egScreenShot (
+  VOID
+  );
+
+INTN
+drawSVGtext (
+  IN EG_IMAGE         *TextBufferXY,
+  IN INTN             posX,
+  IN INTN             posY,
+  IN INTN             textType,
+  IN CONST CHAR16     *text,
+  IN UINTN            Cursor
+  );
+
+VOID
+testSVG (
+  VOID
+  );
 
 #endif /* __LIBEG_LIBEG_H__ */
 

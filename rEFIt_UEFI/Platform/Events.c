@@ -371,27 +371,30 @@ OnSimpleFileSystem (
 }  
 
 EFI_STATUS
-GuiEventsInitialize ()
+GuiEventsInitialize (
+  VOID
+  )
 {
-	EFI_STATUS				Status;
+	EFI_STATUS			Status;
 	EFI_EVENT				Event;
-	VOID*				  	RegSimpleFileSystem = NULL;
+	VOID            *RegSimpleFileSystem = NULL;
 	
 	gEvent = 0;
 	Status = gBS->CreateEvent (
-							   EVT_NOTIFY_SIGNAL,
-							   TPL_NOTIFY,
-							   OnSimpleFileSystem,
-							   NULL,
-							   &Event);
-	if(!EFI_ERROR(Status))
-	{
+							    EVT_NOTIFY_SIGNAL,
+							    TPL_NOTIFY,
+							    OnSimpleFileSystem,
+							    NULL,
+							    &Event
+                  );
+  
+	if (!EFI_ERROR(Status)) {
 		Status = gBS->RegisterProtocolNotify (
-											  &gEfiSimpleFileSystemProtocolGuid,
-											  Event,
-											  &RegSimpleFileSystem);
+                    &gEfiSimpleFileSystemProtocolGuid,
+                    Event,
+                    &RegSimpleFileSystem
+                    );
 	}
-	
 	
 	return Status;
 }  
