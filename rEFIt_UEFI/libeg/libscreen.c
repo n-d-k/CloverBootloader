@@ -70,7 +70,13 @@ static EFI_STATUS GopSetModeAndReconnectTextOut();
 // Wrapped ConsoleControl GetMode() implementation - for blocking resolution switch when changing modes
 //
 EFI_STATUS EFIAPI
-egConsoleControlGetMode(IN EFI_CONSOLE_CONTROL_PROTOCOL *This, OUT EFI_CONSOLE_CONTROL_SCREEN_MODE *Mode, OUT BOOLEAN *GopUgaExists, OPTIONAL OUT BOOLEAN *StdInLocked OPTIONAL) {
+egConsoleControlGetMode (
+  IN EFI_CONSOLE_CONTROL_PROTOCOL       *This,
+  OUT EFI_CONSOLE_CONTROL_SCREEN_MODE   *Mode,
+  OUT BOOLEAN                           *GopUgaExists OPTIONAL,
+  OUT BOOLEAN                           *StdInLocked OPTIONAL
+  )
+{
     if (IgnoreConsoleSetMode) {
         *Mode = CurrentForcedConsoleMode;
         if (GopUgaExists)
@@ -155,7 +161,10 @@ VOID egDumpGOPVideoModes(VOID)
     
 }
 */
-VOID egDumpSetConsoleVideoModes(VOID)
+VOID
+egDumpSetConsoleVideoModes (
+  VOID
+  )
 {
   UINTN i;
   UINTN Width, Height;
@@ -208,7 +217,10 @@ VOID egDumpSetConsoleVideoModes(VOID)
   }
 }
 
-EFI_STATUS egSetMaxResolution()
+EFI_STATUS
+egSetMaxResolution (
+  VOID
+  )
 {
   EFI_STATUS  Status = EFI_UNSUPPORTED;
   UINT32      Width = 0;
@@ -263,7 +275,10 @@ EFI_STATUS egSetMaxResolution()
   return Status;
 }
 
-EFI_STATUS egSetMode(INT32 Next)
+EFI_STATUS
+egSetMode (
+  IN INT32         Next
+  )
 {
   EFI_STATUS  Status = EFI_UNSUPPORTED;
   UINT32      MaxMode;
@@ -297,7 +312,10 @@ EFI_STATUS egSetMode(INT32 Next)
   return Status;
 }
 
-EFI_STATUS egSetScreenResolution(IN CHAR16 *WidthHeight)
+EFI_STATUS
+egSetScreenResolution (
+  IN CHAR16                   *WidthHeight
+  )
 {
     EFI_STATUS  Status = EFI_UNSUPPORTED;
     UINT32      Width;
@@ -435,7 +453,11 @@ egInitScreen (
     }
 }
 
-VOID egGetScreenSize(OUT INTN *ScreenWidth, OUT INTN *ScreenHeight)
+VOID
+egGetScreenSize (
+  OUT INTN        *ScreenWidth,
+  OUT INTN        *ScreenHeight
+  )
 {
     if (ScreenWidth != NULL)
         *ScreenWidth = egScreenWidth;
@@ -443,7 +465,10 @@ VOID egGetScreenSize(OUT INTN *ScreenWidth, OUT INTN *ScreenHeight)
         *ScreenHeight = egScreenHeight;
 }
 
-CHAR16 * egScreenDescription(VOID)
+CHAR16 *
+egScreenDescription (
+  VOID
+  )
 {
     if (egHasGraphics) {
         if (GraphicsOutput != NULL) {
@@ -468,7 +493,10 @@ egHasGraphicsMode (
   return egHasGraphics;
 }
 
-BOOLEAN egIsGraphicsModeEnabled(VOID)
+BOOLEAN
+egIsGraphicsModeEnabled (
+  VOID
+  )
 {
     EFI_CONSOLE_CONTROL_SCREEN_MODE CurrentMode;
 
@@ -480,7 +508,10 @@ BOOLEAN egIsGraphicsModeEnabled(VOID)
     return FALSE;
 }
 
-VOID egSetGraphicsModeEnabled(IN BOOLEAN Enable)
+VOID
+egSetGraphicsModeEnabled (
+  IN BOOLEAN                     Enable
+  )
 {
     EFI_CONSOLE_CONTROL_SCREEN_MODE CurrentMode;
     EFI_CONSOLE_CONTROL_SCREEN_MODE NewMode;
@@ -522,7 +553,10 @@ VOID egSetGraphicsModeEnabled(IN BOOLEAN Enable)
 // Drawing to the screen
 //
 
-VOID egClearScreen(IN EG_PIXEL *Color)
+VOID
+egClearScreen (
+  IN EG_PIXEL         *Color
+  )
 {
     EFI_UGA_PIXEL FillColor;
     
@@ -546,10 +580,16 @@ VOID egClearScreen(IN EG_PIXEL *Color)
     }
 }
     
-VOID egDrawImageArea(IN EG_IMAGE *Image,
-                     IN INTN AreaPosX, IN INTN AreaPosY,
-                     IN INTN AreaWidth, IN INTN AreaHeight,
-                     IN INTN ScreenPosX, IN INTN ScreenPosY)
+VOID
+egDrawImageArea (
+  IN EG_IMAGE           *Image,
+  IN INTN               AreaPosX,
+  IN INTN               AreaPosY,
+  IN INTN               AreaWidth,
+  IN INTN               AreaHeight,
+  IN INTN               ScreenPosX,
+  IN INTN               ScreenPosY
+  )
 {
   if (!egHasGraphics || !Image) return;
   
@@ -598,10 +638,15 @@ VOID egDrawImageArea(IN EG_IMAGE *Image,
   }
 }
 // Blt(this, Buffer, mode, srcX, srcY, destX, destY, w, h, deltaSrc);
-VOID egTakeImage(IN EG_IMAGE *Image, INTN ScreenPosX, INTN ScreenPosY,
-                 IN INTN AreaWidth, IN INTN AreaHeight)
+VOID
+egTakeImage (
+  IN EG_IMAGE    *Image,
+  IN INTN        ScreenPosX,
+  IN INTN        ScreenPosY,
+  IN INTN        AreaWidth,
+  IN INTN        AreaHeight
+  )
 {
-//  if (GraphicsOutput != NULL) {
     if (ScreenPosX + AreaWidth > UGAWidth)
     {
       AreaWidth = UGAWidth - ScreenPosX;
@@ -626,15 +671,16 @@ VOID egTakeImage(IN EG_IMAGE *Image, INTN ScreenPosX, INTN ScreenPosY,
                    ScreenPosY,
                    0, 0, AreaWidth, AreaHeight, (UINTN)Image->Width * 4);
     }
-
-//  }
 }
 
 //
 // Make a screenshot
 //
 
-EFI_STATUS egScreenShot(VOID)
+EFI_STATUS
+egScreenShot (
+  VOID
+  )
 {
     EFI_STATUS      Status = EFI_NOT_READY;
     EG_IMAGE        *Image;
@@ -738,7 +784,11 @@ EFI_STATUS egScreenShot(VOID)
 // Sets mode via GOP protocol, and reconnects simple text out drivers
 //
 
-static EFI_STATUS GopSetModeAndReconnectTextOut(IN UINT32 ModeNumber)
+static
+EFI_STATUS
+GopSetModeAndReconnectTextOut (
+  IN UINT32              ModeNumber
+  )
 {
     UINTN       HandleCount;
     UINTN       Index;
